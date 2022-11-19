@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/danielmatheison/Develop/Solidity/metana-course/wk1-ERC20/contracts/DM4_Token.sol": {
-      "lastModificationDate": 1668804334921,
-      "contentHash": "f788ed17038e1d12a56461c86b8ab1cd",
+      "lastModificationDate": 1668816502789,
+      "contentHash": "9f0d6f8b53da1c92cb3eeedbf32c3015",
       "sourceName": "contracts/DM4_Token.sol",
       "solcConfig": {
         "version": "0.8.17",
@@ -113,10 +113,10 @@
         "ERC20"
       ]
     },
-    "/Users/danielmatheison/Develop/Solidity/metana-course/wk1-ERC20/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
-      "lastModificationDate": 1668791959654,
-      "contentHash": "ad7c2d0af148c8f9f097d65deeb4da6b",
-      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+    "/Users/danielmatheison/Develop/Solidity/metana-course/wk1-ERC20/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1668791959611,
+      "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
         "version": "0.8.17",
         "settings": {
@@ -145,7 +145,7 @@
         "^0.8.0"
       ],
       "artifacts": [
-        "IERC20"
+        "Context"
       ]
     },
     "/Users/danielmatheison/Develop/Solidity/metana-course/wk1-ERC20/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
@@ -185,10 +185,10 @@
         "IERC20Metadata"
       ]
     },
-    "/Users/danielmatheison/Develop/Solidity/metana-course/wk1-ERC20/node_modules/@openzeppelin/contracts/utils/Context.sol": {
-      "lastModificationDate": 1668791959611,
-      "contentHash": "5f2c5c4b6af2dd4551027144797bc8be",
-      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+    "/Users/danielmatheison/Develop/Solidity/metana-course/wk1-ERC20/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1668791959654,
+      "contentHash": "ad7c2d0af148c8f9f097d65deeb4da6b",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
         "version": "0.8.17",
         "settings": {
@@ -217,7 +217,7 @@
         "^0.8.0"
       ],
       "artifacts": [
-        "Context"
+        "IERC20"
       ]
     }
   }
