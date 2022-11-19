@@ -3,10 +3,14 @@ pragma solidity ^0.8.9;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract DM4thToken is ERC20 {
 
-    uint256 private initialSupply = 10000;
+    using SafeMath for uint256;
+
+    uint256 private initialSupply = 10000 * 1 ether;
+    uint256 private maxSupply = 1000000 * 1 ether;
 
     // used to store god adddress for later
     address public _god;
@@ -14,6 +18,10 @@ contract DM4thToken is ERC20 {
     // create authority and sanction lists
     mapping(address => bool) public authorities;
     mapping(address => bool) public sanctioned;
+
+    // Buy & Sell ratios to ETH
+    uint256 private buy_ratio = 1000;
+    uint256 private sell_ratio = 2000;
 
     // Add events for off-chain applications
     event MintTokensToAddress(address _recipient, uint256 _amount);
@@ -28,6 +36,8 @@ contract DM4thToken is ERC20 {
 
     event BuyTokens();
     event Withdraw(uint256 _amountEth);
+
+    event SellBack(uint256 _amount);
 
 
     constructor() ERC20("DM4th", "DM4") {
@@ -47,6 +57,8 @@ contract DM4thToken is ERC20 {
     function mintTokensToAddress(address recipient, uint256 amount) public virtual {
         // Check that the caller is God
         require(msg.sender == _god, "You do not have the power!!");
+        // Check that the act of minting tokens won't push over the total supply
+        
         // mint new tokens to the "to" address -- exception handling done in ERC20
         _mint(recipient, amount);  
         emit MintTokensToAddress(recipient, amount);
@@ -131,6 +143,8 @@ contract DM4thToken is ERC20 {
         // make sure the address is also no longer an authority
         authorities[sanc] = false;
         emit AddSanction(sanc);
+
+        // oppensepplin access control library
     }
 
     function removeSanction(address sanc) public virtual {
@@ -144,6 +158,7 @@ contract DM4thToken is ERC20 {
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
         require(sanctioned[to] == false, "VIOLATION!! Cannot transfer to a sanctioned address!");
+        require(sanctioned[from] == false, "VIOLATION!! Cannot transfer from a sanctioned address!");
     }
 
     /**
@@ -157,11 +172,12 @@ contract DM4thToken is ERC20 {
 
     function buyTokens() public payable {
         // check that sender is sending 1 ETH
-        require(msg.value == 1 ether, "Must send exactly 1 ETH!!");
+        require(msg.value > 0 ether, "Must send more than 0 ETH!!");
+        uint256 mint_amount = msg.value * buy_ratio ;
         // check that this mint won't put the total supply > 1,000,000
-        require(totalSupply() <= 999000, "Mint will overflow the 1,000,000 token limit");
+        require(totalSupply() <= maxSupply - mint_amount, "Mint will overflow the 1,000,000 token limit");
 
-        _mint(msg.sender, 1000);
+        _mint(msg.sender, mint_amount);
 
         emit BuyTokens();
     }
@@ -170,11 +186,43 @@ contract DM4thToken is ERC20 {
         // check that the message sender is god
         require(msg.sender == _god, "You do not have the power!!");
         // check that the withdrawal amount is not greater than the smart contract's balance
-        uint256 amountWei = amountEth * 1000000000000000000;
-        require(address(this).balance >= amountWei, "Smart contract is too poor for this!!");
-
+        uint256 amountWei = amountEth * 1 ether;
         payable(msg.sender).transfer(amountWei);
 
         emit Withdraw(amountEth);
+    }
+
+    /**
+     * Partial Refund
+     * 
+     * add functionality for a user to redeem 1000 tokens for 0.5ETH
+     * 
+     * - Any arbitrary amount of tokens should work and hold the same ratio of 1000 tokens / 0.5 ETH
+     * - Revert if the contract doesn't have enough ETH to pay the user
+     * - Hard supply max at 1,000,000 tokens still holds
+     * - Users minting tokens at the supply limit can redeem from the contract's balance of tokens if available
+     * - SafeMath from OpenZepplin imported to handle integer division
+     */
+
+    function sellBack(uint256 amount) public {
+        // check that amount > 0
+        require(amount > 0, "Input amount to sellBack == 0??!!");
+        uint256 refund_wei = amount * 1 ether / sell_ratio; 
+        // check that contract has enough ETH 
+        require(address(this).balance >= refund_wei, "Smart contract is too poor for a refund!!");
+        // check contract allowance to spend tokens
+        // uint256 token_allowance = allowance(msg.sender, address(this));
+        // require(token_allowance >= amount, "Not enough allowance to perform transfer!!");
+        // require contract approval to move ERC-20 tokens -- happens outside contract don't need
+        // bool approval = approve(address(this), amount);
+        // require(approval, "Transaction approval denied!!");
+        
+        // transfer the tokens first
+        _transfer(msg.sender, address(this), amount * 1 ether);
+
+        // transfer the eth
+        payable(msg.sender).transfer(refund_wei);
+
+        emit SellBack(amount);
     }
 }
