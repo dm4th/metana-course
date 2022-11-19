@@ -15,11 +15,12 @@ describe("DM4th Token Contract", function () {
         return { DM4, hardhatDM4, owner, addr1, addr2 };
       }
 
+      
+
     describe("Pre-Check", function() {
 
       it("Should set the owner to the god address", async function () {
         const { hardhatDM4, owner } = await loadFixture(deployTokenFixture);
-        const god_addr = await hardhatDM4._god();
         expect(await hardhatDM4._god()).to.equal(owner.address);
       });
       
@@ -30,6 +31,8 @@ describe("DM4th Token Contract", function () {
         expect(total_supply).to.equal(ownerBalance);
       });
     });
+
+
 
     describe("Assignment 1: God Mode", function() {
 
@@ -88,6 +91,134 @@ describe("DM4th Token Contract", function () {
         expect(addr1_balance).to.equal(0);
         expect(addr2_balance).to.equal(transfer_value);
         expect(total_supply).to.equal(ownerBalance + transfer_value);
+      });
+    });
+
+
+
+    describe("Assignment 2: Sanctions", function() {
+
+      it("Should allow for god to add an authority", async function () {
+        const { hardhatDM4, addr1 } = await loadFixture(deployTokenFixture);
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addAuthority(addr1.address);
+        // Check that addr1 is an authority
+        const addr1_auth = await hardhatDM4.authorities(addr1.address);
+        expect(addr1_auth).to.equal(true);
+      });
+
+      it("Should allow for new authorities to add other authorities", async function () {
+        const { hardhatDM4, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addAuthority(addr1.address);
+        // addr1 add addr2 as an authority
+        await hardhatDM4.connect(addr2);
+        await hardhatDM4.connect(addr1).addAuthority(addr2.address);
+        // Check that addr2 is an authority
+        const addr2_auth = await hardhatDM4.authorities(addr2.address);
+        expect(addr2_auth).to.equal(true);
+      });
+
+      it("Should not allow for random addresses to add other authorities", async function () {
+        const { hardhatDM4, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        // addr1 add addr2 as an authority without being an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.connect(addr2);
+        await expect(
+          hardhatDM4.connect(addr1).addAuthority(addr2.address)
+          ).to.be.revertedWith("Must become an authority before performing this action!!");
+      });
+
+      it("Should not allow for new authorities to remove other authorities", async function () {
+        const { hardhatDM4, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addAuthority(addr1.address);
+        // addr1 add addr2 as an authority
+        await hardhatDM4.connect(addr2);
+        await hardhatDM4.connect(addr1).addAuthority(addr2.address);
+        // Check that addr2 is an authority
+        await expect(
+          hardhatDM4.connect(addr1).removeAuthority(addr2.address)
+          ).to.be.revertedWith("You do not have the power!!");
+      });
+
+      it("Should allow for god to add sanctions", async function () {
+        const { hardhatDM4, addr1 } = await loadFixture(deployTokenFixture);
+        // add addr1 as a sanction
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addSanction(addr1.address);
+        // Check that addr1 is a sanction
+        const addr1_auth = await hardhatDM4.sanctioned(addr1.address);
+        expect(addr1_auth).to.equal(true);
+      });
+
+      it("Should allow for god to remove sanctions", async function () {
+        const { hardhatDM4, addr1 } = await loadFixture(deployTokenFixture);
+        // add addr1 as a sanction
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addSanction(addr1.address);
+        // addr1 remove addr2 as a sanction
+        await hardhatDM4.removeSanction(addr1.address);
+        // Check that addr1 is no longer a sanction
+        const addr1_auth = await hardhatDM4.sanctioned(addr1.address);
+        expect(addr1_auth).to.equal(false);
+      });
+
+      it("Should allow for new authorities to add sanctions", async function () {
+        const { hardhatDM4, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addAuthority(addr1.address);
+        // addr1 add addr2 as a sanction
+        await hardhatDM4.connect(addr2);
+        await hardhatDM4.connect(addr1).addSanction(addr2.address);
+        // Check that addr2 is a sanction
+        const addr2_auth = await hardhatDM4.sanctioned(addr2.address);
+        expect(addr2_auth).to.equal(true);
+      });
+
+      it("Should allow for new authorities to remove sanctions", async function () {
+        const { hardhatDM4, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addAuthority(addr1.address);
+        // addr1 add addr2 as a sanction
+        await hardhatDM4.connect(addr2);
+        await hardhatDM4.connect(addr1).addSanction(addr2.address);
+        // addr1 remove addr2 as a sanction
+        await hardhatDM4.connect(addr1).removeSanction(addr2.address);
+        // Check that addr2 is no longer a sanction
+        const addr2_auth = await hardhatDM4.sanctioned(addr2.address);
+        expect(addr2_auth).to.equal(false);
+      });
+
+      it("Should not allow for sanctioned addresses to become authorities", async function () {
+        const { hardhatDM4, addr1, addr2 } = await loadFixture(deployTokenFixture);
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addAuthority(addr1.address);
+        // addr1 add addr2 as a sanction
+        await hardhatDM4.connect(addr2);
+        await hardhatDM4.connect(addr1).addSanction(addr2.address);
+        // Check failure on addr1 add addr2 as a sanction
+        await expect(
+          hardhatDM4.connect(addr1).addAuthority(addr2.address)
+          ).to.be.revertedWith("Cannot make a sanctioned address an authority!!");
+      });
+
+      it("Should not allow for sanctioned addresses to receive new tokens", async function () {
+        const { hardhatDM4, addr1 } = await loadFixture(deployTokenFixture);
+        const mint_value = 50;
+        // add addr1 as an authority
+        await hardhatDM4.connect(addr1);
+        await hardhatDM4.addSanction(addr1.address);
+        // Check failure on addr1 mint new tokens
+        await expect(
+          hardhatDM4.mintTokensToAddress(addr1.address, mint_value)
+          ).to.be.revertedWith("VIOLATION!! Cannot transfer to a sanctioned address!");
       });
     });
   });
