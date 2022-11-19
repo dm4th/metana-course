@@ -15,9 +15,6 @@ contract DM4thToken is ERC20 {
     mapping(address => bool) public authorities;
     mapping(address => bool) public sanctioned;
 
-    // create a variable to quickly store the amount of ether in the contract
-    uint256 public ethBalance = 0;
-
     // Add events for off-chain applications
     event MintTokensToAddress(address _recipient, uint256 _amount);
     event BurnTokensFromAddress(address _target, uint256 _amount);
@@ -30,7 +27,7 @@ contract DM4thToken is ERC20 {
     event RemoveSanction(address _sanc);
 
     event BuyTokens();
-    event Withdraw(uint256 _amount);
+    event Withdraw(uint256 _amountEth);
 
 
     constructor() ERC20("DM4th", "DM4") {
@@ -160,7 +157,7 @@ contract DM4thToken is ERC20 {
 
     function buyTokens() public payable {
         // check that sender is sending 1 ETH
-        require(msg.value == 1, "Must send exactly 1 ETH!!");
+        require(msg.value == 1 ether, "Must send exactly 1 ETH!!");
         // check that this mint won't put the total supply > 1,000,000
         require(totalSupply() <= 999000, "Mint will overflow the 1,000,000 token limit");
 
@@ -169,14 +166,15 @@ contract DM4thToken is ERC20 {
         emit BuyTokens();
     }
 
-    function withdraw (uint256 amount)  public {
+    function withdraw (uint256 amountEth)  public {
         // check that the message sender is god
         require(msg.sender == _god, "You do not have the power!!");
         // check that the withdrawal amount is not greater than the smart contract's balance
-        require(address(this).balance >= amount, "Smart contract can't afford that withdrawal!!");
+        uint256 amountWei = amountEth * 1000000000000000000;
+        require(address(this).balance >= amountWei, "Smart contract is too poor for this!!");
 
-        payable(msg.sender).transfer(amount);
+        payable(msg.sender).transfer(amountWei);
 
-        emit Withdraw(amount);
+        emit Withdraw(amountEth);
     }
 }
