@@ -15,6 +15,9 @@ contract DM4thToken is ERC20 {
     mapping(address => bool) public authorities;
     mapping(address => bool) public sanctioned;
 
+    // create a variable to quickly store the amount of ether in the contract
+    uint256 public ethBalance = 0;
+
     // Add events for off-chain applications
     event MintTokensToAddress(address _recipient, uint256 _amount);
     event BurnTokensFromAddress(address _target, uint256 _amount);
@@ -25,6 +28,9 @@ contract DM4thToken is ERC20 {
     event RemoveAuthority(address _auth);
     event AddSanction(address _sanc);
     event RemoveSanction(address _sanc);
+
+    event BuyTokens();
+    event Withdraw(uint256 _amount);
 
 
     constructor() ERC20("DM4th", "DM4") {
@@ -141,5 +147,36 @@ contract DM4thToken is ERC20 {
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
         super._beforeTokenTransfer(from, to, amount);
         require(sanctioned[to] == false, "VIOLATION!! Cannot transfer to a sanctioned address!");
+    }
+
+    /**
+     * Token Sale
+     * 
+     * add functionality for a user to mint 1000 tokens if they pay 1 ETH
+     * 
+     * - Cannot make the token supply go over 1,000,000
+     * - Make sure to include a function to withdraw the Ether that other users pay into it
+     */
+
+    function buyTokens() public payable {
+        // check that sender is sending 1 ETH
+        require(msg.value == 1, "Must send exactly 1 ETH!!");
+        // check that this mint won't put the total supply > 1,000,000
+        require(totalSupply() <= 999000, "Mint will overflow the 1,000,000 token limit");
+
+        _mint(msg.sender, 1000);
+
+        emit BuyTokens();
+    }
+
+    function withdraw (uint256 amount)  public {
+        // check that the message sender is god
+        require(msg.sender == _god, "You do not have the power!!");
+        // check that the withdrawal amount is not greater than the smart contract's balance
+        require(address(this).balance >= amount, "Smart contract can't afford that withdrawal!!");
+
+        payable(msg.sender).transfer(amount);
+
+        emit Withdraw(amount);
     }
 }
