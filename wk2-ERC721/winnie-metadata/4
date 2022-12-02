@@ -1,0 +1,26 @@
+{
+	"image": "ipfs://QmRFHBjvPQsEDc8MMGkgS7Hua19knYLWU9srx841NwPWMj/4.jpeg",
+	"name": "Derpy Winnie",
+	"attributes": [
+		{
+			"trait_type": "Age",
+			"value": "Pupper"
+		},
+		{
+			"trait_type": "Tongue",
+			"value": "Blep"
+		},
+		{
+			"trait_type": "Attention",
+			"value": "Derpy"
+		},
+		{
+			"trait_type": "Hecker",
+			"value": "Heckin"
+		},
+		{
+			"trait_type": "Clothing",
+			"value": "Bandana"
+		}
+	]
+}

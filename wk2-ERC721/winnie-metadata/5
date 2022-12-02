@@ -1,0 +1,26 @@
+{
+	"image": "ipfs://QmRFHBjvPQsEDc8MMGkgS7Hua19knYLWU9srx841NwPWMj/5.jpeg",
+	"name": "First Beach Winnie",
+	"attributes": [
+		{
+			"trait_type": "Age",
+			"value": "Baby"
+		},
+		{
+			"trait_type": "Tongue",
+			"value": "None"
+		},
+		{
+			"trait_type": "Attention",
+			"value": "Doing A Concern"
+		},
+		{
+			"trait_type": "Hecker",
+			"value": "Total Hecker"
+		},
+		{
+			"trait_type": "Clothing",
+			"value": "None"
+		}
+	]
+}

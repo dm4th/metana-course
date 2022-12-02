@@ -1,0 +1,26 @@
+{
+	"image": "ipfs://QmRFHBjvPQsEDc8MMGkgS7Hua19knYLWU9srx841NwPWMj/2.jpeg",
+	"name": "Smile Winnie",
+	"attributes": [
+		{
+			"trait_type": "Age",
+			"value": "Pupper"
+		},
+		{
+			"trait_type": "Tongue",
+			"value": "Mlerm"
+		},
+		{
+			"trait_type": "Attention",
+			"value": "Smile"
+		},
+		{
+			"trait_type": "Hecker",
+			"value": "None"
+		},
+		{
+			"trait_type": "Clothing",
+			"value": "None"
+		}
+	]
+}
