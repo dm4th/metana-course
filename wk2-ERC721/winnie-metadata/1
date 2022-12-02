@@ -1,0 +1,26 @@
+{
+	"image": "ipfs://QmRFHBjvPQsEDc8MMGkgS7Hua19knYLWU9srx841NwPWMj/1.jpeg",
+	"name": "First Snow Winnie",
+	"attributes": [
+		{
+			"trait_type": "Age",
+			"value": "Pupper"
+		},
+		{
+			"trait_type": "Tongue",
+			"value": "None"
+		},
+		{
+			"trait_type": "Attention",
+			"value": "Ball / Sticko"
+		},
+		{
+			"trait_type": "Hecker",
+			"value": "Heckin"
+		},
+		{
+			"trait_type": "Clothing",
+			"value": "Jacket"
+		}
+	]
+}

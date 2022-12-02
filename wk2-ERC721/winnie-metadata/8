@@ -1,0 +1,26 @@
+{
+	"image": "ipfs://QmRFHBjvPQsEDc8MMGkgS7Hua19knYLWU9srx841NwPWMj/8.jpeg",
+	"name": "Sticko Wicko Winnie",
+	"attributes": [
+		{
+			"trait_type": "Age",
+			"value": "Pupper"
+		},
+		{
+			"trait_type": "Tongue",
+			"value": "None"
+		},
+		{
+			"trait_type": "Attention",
+			"value": "Ball / Sticko"
+		},
+		{
+			"trait_type": "Hecker",
+			"value": "Total Hecker"
+		},
+		{
+			"trait_type": "Clothing",
+			"value": "None"
+		}
+	]
+}
