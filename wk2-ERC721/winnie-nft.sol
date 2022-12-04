@@ -3,32 +3,39 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract WinnieNFT is ERC721, Ownable {
+    using SafeMath for uint256;
+    using Address for address;
 
-    uint256 public tokenSupply = 0;
+    address private _minter;
+
+    uint256 private tokenSupply = 0;
     uint256 public constant MAX_SUPPLY = 10;
-    // make the price to mint 0 - minting will be done with an ERC20
-    uint256 public constant PRICE = 0 ether;
 
-    constructor() ERC721("Winnie", "WNE") {}
-
-    function mint() external payable returns (uint256) {
-        // check that we haven't exceeded the max number of tokens and that we're paying the right amount for the token
-        require(tokenSupply < MAX_SUPPLY, "Supply Used Up!!");
-        require(msg.value == PRICE, "Wrong Price for Minting!!");
-
-        // use the built-in ERC721 mint function
-        _mint(msg.sender, tokenSupply);
-        // increment the total supply counter
-        tokenSupply++;
-        // NEW CHANGE
-        // return the tokenID that was just minted (totalSupply -1)
-        return tokenSupply - 1;
+    constructor() ERC721("Winnie", "WNE") {
+        _minter = address(0);
     }
 
-    function withdraw() external onlyOwner {
-        payable(msg.sender).transfer(address(this).balance);
+    function mint(address to) external {
+        // check that we haven't exceeded the max number of tokens
+        require(tokenSupply < MAX_SUPPLY, "Supply Used Up!!");
+        // check that the caller of the contract is in fact another contract
+        require(msg.sender.isContract(), "Can only mint through another contract!!");
+        // check that the caller of the contract is the new minter address
+        require(msg.sender == _minter, "Calling contract not set as the minter!!");
+
+        // use the built-in ERC721 mint function - mint token directly to the minter
+        _mint(to, tokenSupply);
+        // increment the total supply counter
+        tokenSupply++;
+    }
+
+    function changeMinter(address newMinter) public virtual onlyOwner{
+        require(newMinter.isContract(), "New Minter Address must be another contract!!");
+        _minter = newMinter;
     }
 
     function _baseURI() internal pure override returns(string memory) {
