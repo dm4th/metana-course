@@ -1,7 +1,7 @@
 require('dotenv').config();
 require("@nomicfoundation/hardhat-toolbox");
 
-const { API_URL, PRIVATE_KEY, ETHERSCAN_KEY } = process.env;
+const { API_URL, PRIVATE_KEY, POLYGONSCAN_KEY } = process.env;
 module.exports = {
    solidity: "0.8.7",
    defaultNetwork: "hardhat",
@@ -13,6 +13,6 @@ module.exports = {
       }
    },
    etherscan: {
-     apiKey: `${ETHERSCAN_KEY}`,
+     apiKey: `${POLYGONSCAN_KEY}`,
    },
 };
