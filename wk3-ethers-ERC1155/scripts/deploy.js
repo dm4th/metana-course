@@ -7,25 +7,34 @@
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
 
-  const lockedAmount = hre.ethers.utils.parseEther("1");
+    const [owner] = await hre.ethers.getSigners();
 
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+    // deploy token contract
+    const ForgeTokenFactory = await hre.ethers.getContractFactory("ForgeToken");
+    const ForgeToken = await ForgeTokenFactory.deploy();
+    await ForgeToken.deployed();
+    const ForgeTokenAddress = ForgeToken.address;
 
-  await lock.deployed();
+    // deploy logic contract with address of token contract
+    const ForgeLogicFactory = await hre.ethers.getContractFactory("ForgeLogic");
+    const ForgeLogic = await ForgeLogicFactory.deploy(ForgeTokenAddress);
+    await ForgeLogic.deployed();
+    const ForgeLogicAddress = ForgeLogic.address;
 
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+    // change minter address on token contract
+    await ForgeToken.changeMinter(ForgeLogicAddress);
+    const minterAddress = ForgeToken._minter();
+
+    console.log(`Contracts deployed by:\t ${owner.address}`);
+    console.log(`Token Contract Address:\t ${ForgeTokenAddress}`);
+    console.log(`Logic Contract Address:\t ${ForgeLogicAddress}`);
+    console.log(`Token Contract Minter:\t ${minterAddress}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
+    console.error(error);
+    process.exitCode = 1;
 });

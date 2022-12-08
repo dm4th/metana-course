@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
+// Author: @dm4th
 contract ForgeToken is ERC1155, Ownable {
     using SafeMath for uint256;
     using Address for address;
