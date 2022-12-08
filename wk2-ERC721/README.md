@@ -1,8 +1,8 @@
-NFT Contract: 0xCbC85f10dc3Fedd42c0b6AF73225dA8DEaFcCF29
+NFT Contract: https://goerli.etherscan.io/address/0xd0273561d44589c617d6b6d780855754b9c666cb#code
 
-ERC20 Contract: 0xAa0c29a5A166F0e3dBD086C8eDB8C02AD4fb2761
+ERC20 Contract: https://goerli.etherscan.io/address/0x95e4b6566d338b1f1820ec1228e17e138062b20a#code
 
-NFT Staking Contract: 0xc8e2b14A84F45d93d4F5447f75714efB489e2Ba3
+NFT Staking Contract: https://goerli.etherscan.io/address/0xef203d9e5cf1d081f13803da2645fdb25b37a859#code
 
 
 Each contract is verified on the Goerli Test Network
