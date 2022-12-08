@@ -27,7 +27,7 @@ contract PetcoParkingLot is Ownable {
     // Constant for ERC20 price to pay for an NFT and to withdraw from the contract for staking
     uint256 private constant ERC20_PRICE = 10 * 1 ether;
     // Constant for how long you need to wait before minting more tokens (in seconds)
-    uint256 private constant WITHDRAW_TIME = 86400;
+    uint256 private constant WITHDRAW_TIME = 24 hours;
 
     // Add events for off-chain applications
     event BuyNFT();
@@ -78,8 +78,9 @@ contract PetcoParkingLot is Ownable {
         wnft.transferFrom(msg.sender, address(this), tokenID);
         // add tokenID to staking mapping
         _stakers[tokenID] = msg.sender;
-        // No need to include an update for _withdrawalTimes, new tokens will auto-check to 0, 
-        // and we don't want to overwrite old values because of the re-staking bug
+        // reset timer for ERC20 withdrawal
+        _withdrawalTimes[tokenID] = block.timestamp;
+
 
         emit StakeNFT(tokenID);
     }
@@ -97,12 +98,8 @@ contract PetcoParkingLot is Ownable {
         // change the _stakers address to the 0 address
         _stakers[tokenID] = address(0);
 
-        // No need to include an update for _withdrawalTimes, new tokens will auto-check to 0, 
-        // and we don't want to overwrite old values because of the re-staking bug
+        // No need to include an update for _withdrawalTimes, new tokens will auto-check to the block time upon re-staking
 
-        // If the token hasn't been staked before, set the withdrawal timer to 0 (i.e. any check will pass on elapsed time)
-        // else leave the withdrawal time alone to avoid re-staking bug
-        // _withdrawalTimes[tokenID] = 0;
         emit UnStakeNFT(tokenID);
     } 
 
@@ -116,7 +113,7 @@ contract PetcoParkingLot is Ownable {
         // check that the contract still owns the NFT
         require(wnft.ownerOf(tokenID) == address(this), "This token is not staked currently!!");
         // check that the user hasn't withdrawn tokens in the previous timeframe
-        require(block.timestamp - _withdrawalTimes[tokenID] >= WITHDRAW_TIME, "You have already withdrawn for this token... You must wait!!");
+        require(block.timestamp - _withdrawalTimes[tokenID] >= WITHDRAW_TIME, "You have withdrawn/staked this token in the last 24 hours... You must wait!!");
 
         // mint ERC20_PRICE ERC20 tokens to the calling address
         dm4.mintTokensToAddress(msg.sender, ERC20_PRICE);
