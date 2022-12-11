@@ -5,3 +5,9 @@ export const InputButton = (props) => (
         {props.label}
     </button>
 );
+
+export const InputButton2 = (props) => (
+    <button onClick={() => props.handleClick(props.inputValue, props.outputValue)} className={props.className}>
+        {props.label}
+    </button>
+);
