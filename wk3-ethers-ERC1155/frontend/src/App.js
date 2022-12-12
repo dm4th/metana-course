@@ -4,11 +4,12 @@ import './App.css';
 import { InputForm } from './components/InputForm';
 import { InputButton, InputButton2 } from './components/InputButton';
 
-// import contract from './contracts/ForgeToken.json';
-// tokenAddress = '0xB07093567612D05Ad979bf0495bA724E82C5016C';
-// tokenABI = contract.abi;
-
+import tokenContract from './contracts/ForgeToken.json';
 import contract from './contracts/ForgeLogic.json';
+
+const tokenAddress = '0xB07093567612D05Ad979bf0495bA724E82C5016C';
+const tokenABI = tokenContract.abi;
+
 const address = '0x99cC161297D48348f559AE83286aa01986060A62';
 const abi = contract.abi;
 
@@ -48,9 +49,11 @@ function App() {
 
   const connectWalletButton = () => {
     return (
-      <button onClick={connectWalletHandler} className='cta-button connect-wallet-button'>
-        Connect Wallet
-      </button>
+      <div className='connect-div'>
+        <button onClick={connectWalletHandler} className='cta-button connect-wallet-button'>
+          Connect Wallet
+        </button>
+      </div>
     )
   }
   
@@ -168,11 +171,12 @@ function App() {
   }
 
   const mintHigherSwitch = async (value, logicContract, signer) => { 
+    console.log(value);
     switch(value) {
-      case 3: return logicContract.connect(signer).mint3();
-      case 4: return logicContract.connect(signer).mint4();
-      case 5: return logicContract.connect(signer).mint5();
-      case 6: return logicContract.connect(signer).mint6();
+      case '3': return logicContract.connect(signer).mint3();
+      case '4': return logicContract.connect(signer).mint4();
+      case '5': return logicContract.connect(signer).mint5();
+      case '6': return logicContract.connect(signer).mint6();
       default: throw Error;
     }
   }
@@ -273,13 +277,107 @@ function App() {
   }
 
 
+  // get MATIC balance
+  const [maticBalance, setMaticBalance] = useState(0);
+  
+  const fetchMaticBalance = async () => {
+    try {
+      const { ethereum } = window;
 
-  const tokenFunctionalityLayout = () => {
+      if(ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        let maticBalance = ethers.utils.formatEther(await (await signer.getBalance()).toString());
+        maticBalance = Math.round(maticBalance * 1e2) / 1e2;
+        setMaticBalance(maticBalance);
+      } else console.log('Ethereum Object does not exist');
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const displayMaticLayout = () => {
     return (
-      <div className="token-functions">
-        {starterLayout()}
-        {higherLayout()}
-        {transferLayout()}
+      <div className='balance matic'>
+        <h2>MATIC Balance -- {maticBalance}</h2>
+      </div>
+    )
+  }
+
+
+  // Get Token Balances
+  const [balance0, setBalance0] = useState(0);
+  const [balance1, setBalance1] = useState(0);
+  const [balance2, setBalance2] = useState(0);
+  const [balance3, setBalance3] = useState(0);
+  const [balance4, setBalance4] = useState(0);
+  const [balance5, setBalance5] = useState(0);
+  const [balance6, setBalance6] = useState(0);
+
+  const fetchTokenBalances = async () => { 
+    try {
+      const { ethereum } = window;
+
+      if(ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const tokenContract = new ethers.Contract(tokenAddress, tokenABI, signer);
+        const addr = await signer.getAddress();
+
+        let b0 = await tokenContract.balanceOf(addr, 0);
+        setBalance0(b0.toString());
+
+        let b1 = await tokenContract.balanceOf(addr, 1);
+        setBalance1(b1.toString());
+
+        let b2 = await tokenContract.balanceOf(addr, 2);
+        setBalance2(b2.toString());
+
+        let b3 = await tokenContract.balanceOf(addr, 3);
+        setBalance3(b3.toString());
+
+        let b4 = await tokenContract.balanceOf(addr, 4);
+        setBalance4(b4.toString());
+
+        let b5 = await tokenContract.balanceOf(addr, 5);
+        setBalance5(b5.toString());
+
+        let b6 = await tokenContract.balanceOf(addr, 6);
+        setBalance6(b6.toString());
+
+      } else console.log('Ethereum Object does not exist');
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  const displayBalanceLayout = (bal, index) => {
+    return (
+      <div className='balance token-balance'>
+        <h2> Token {index} Balance -- {bal}</h2>
+      </div>
+    )
+  } 
+
+
+  const tokenLayout = () => {
+    return (
+      <div className='token-display'>
+        <div className="token-container">
+          {starterLayout()}
+          {higherLayout()}
+          {transferLayout()}
+        </div>
+        <div className="token-container">
+          {displayMaticLayout()}
+          {displayBalanceLayout(balance0, 0)}
+          {displayBalanceLayout(balance1, 1)}
+          {displayBalanceLayout(balance2, 2)}
+          {displayBalanceLayout(balance3, 3)}
+          {displayBalanceLayout(balance4, 4)}
+          {displayBalanceLayout(balance5, 5)}
+          {displayBalanceLayout(balance6, 6)}
+        </div>
       </div>
     )
   }
@@ -287,13 +385,31 @@ function App() {
   
   useEffect(() => {
     checkWalletIsConnected();
-  }, [])
+  }, [currentAccount])
+
+  useEffect(() => {
+    fetchMaticBalance();
+    fetchTokenBalances();
+  }, [
+    inputStarterValue, 
+    inputHigherValue, 
+    inputTransferValue, 
+    outputTransferValue,
+    maticBalance,
+    balance0,
+    balance1,
+    balance2,
+    balance3,
+    balance4,
+    balance5,
+    balance6
+  ])
 
   return (
     <div className="App">
       <h1 className="title-text">Welcome to the Forge!</h1>
       <div>
-        {currentAccount ? tokenFunctionalityLayout() : connectWalletButton()}
+        {currentAccount ? tokenLayout() : connectWalletButton()}
       </div>
     </div>
   );
