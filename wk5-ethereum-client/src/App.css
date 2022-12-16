@@ -1,0 +1,28 @@
+.App {
+  text-align: left;
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: space-between;
+}
+
+.input-div {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  text-align: center;
+}
+
+.input-form {
+  padding: 5px;
+  margin: 5px;
+  border: none;
+  border-radius: 12px;
+}
+
+.input-label {
+  padding: 5px;
+}
+
+.input-field {
+  margin: 15px;
+}
