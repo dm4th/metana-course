@@ -46,13 +46,7 @@ class ERC20Graph extends React.Component {
 
     async componentDidMount() {
         try {
-            // console.log('Mount');
-            // console.log(this.state);
-            // await this.props.alchemy.ws.removeAllListeners();
-            // console.log(this.state);
             await this.updateComponent();
-            // console.log(this.state);
-            // console.log('Done');
         } catch (err) {
             console.error(err);
         }
@@ -106,9 +100,7 @@ class ERC20Graph extends React.Component {
 
     async clearComponent() {
         console.log(`Closing WebSocket for ${this.state.filter.address}`);
-        await this.props.alchemy.ws.off(this.state.filter, (result) => {
-            console.log(`Close ${result}`)
-        });
+        await this.props.alchemy.ws.off(this.state.filter, (result) => {});
         await this.setState({
             contract: this.state.contract,
             name: this.state.name,
@@ -124,17 +116,16 @@ class ERC20Graph extends React.Component {
     }
 
     updateGraph(result) {
-        console.log(result.address);
         const max_blocks = this.props.maxBlocks;
         const block_number = result.blockNumber;
         const _x = this.state._x;
         const _y = this.state._y;
         const arr_len = _x.length;
-        console.log(`Old Arrays:\n${_x}\n${_y}`);
 
         if (_x[arr_len-1] === block_number) {
             _y[arr_len-1] += 1;
         } else {
+            // console.log(`Old Arrays:\n${_x}\n${_y}`);
             const new_len = _x.push(block_number);
             _y.push(1);
             if (new_len > max_blocks) {
@@ -142,8 +133,8 @@ class ERC20Graph extends React.Component {
                 _x.splice(0, removals);
                 _y.splice(0, removals);
             }
+            // console.log(`New Arrays:\n${_x}\n${_y}`);
         }
-        console.log(`New Arrays:\n${_x}\n${_y}`);
         
         this.setState({
             contract: this.state.contract,
@@ -157,7 +148,7 @@ class ERC20Graph extends React.Component {
     }
 
     // Area Graph Render Options & Data
-    options() {
+    options () {
         return ({
             responsiveness: true,
             plugins: {
@@ -172,15 +163,14 @@ class ERC20Graph extends React.Component {
         })
     }
 
-    data()  {
-        const labels = this.state._x
+    data ()  {
         return ({
-            labels: labels.map(() => this.state._x),
+            labels: this.state._x,
             datasets: [
                 {
                     fill: true,
                     label: "Transfer Events",
-                    data: labels.map(() => this.state._y),
+                    data: this.state._y,
                     borderColor: 'rgb(53, 162, 235)',
                     backgroundColor: 'rgba(53, 162, 235, 0.5)',    
                 }
@@ -191,13 +181,14 @@ class ERC20Graph extends React.Component {
     render () {
         let graph;
         if (this.state._x.length > 0) {
-            graph = <Line className='token-graph' options={this.options} data={this.data} />;
+            console.log(this.state);
+            graph = <Line className='graph token-graph' options={this.options()} data={this.data()} />;
         } else {
             graph = <div className='token-graph'></div>;
         };
 
         return (
-            <div className='token-section'>
+            <div className='graph-section'>
                 <div className="input-div">
                     <form className='input-form' onSubmit={this.handleSubmit}>
                         <label className='input-label'>
