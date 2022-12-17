@@ -40,6 +40,10 @@ class ERC20Graph extends React.Component {
             }
         };
 
+        /*
+            - Easy way to get filter topic --> ethers.utils.id("Transfer(address,address,uint256)")
+        */
+
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     };
