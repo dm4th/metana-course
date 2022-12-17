@@ -21,22 +21,28 @@ function App() {
   };
 
   const [currentBlock, setCurrentBlock] = useState(0);
-  const handleBlockChange = (val) => {
-    setCurrentBlock(val);
+
+  const handleBlocksChange = () => {
+    console.log(`Opening WebSocket for Block Fees`);
+    alchemy.ws.on("block", (result) => {
+      setCurrentBlock(result);
+    });
   }
 
   useEffect(() => {
     handleMaxBlocksChange(10);
-    setCurrentBlock(0);
+    handleBlocksChange();
   }, []);
 
   return (
     <div className="App">
       <h1 className="title">Welcome to the Week 5 - ERC20 & Gas Tracking!</h1>
       <h3 className='block-num'>Current Block: {currentBlock.toLocaleString()}</h3>
-      <BlockInput maxBlocks={maxBlocks} onBlocksChange={handleMaxBlocksChange} />
-      <ERC20Graph alchemy={alchemy} maxBlocks={maxBlocks} />
-      <GasGraph alchemy={alchemy} maxBlocks={maxBlocks} onChange={handleBlockChange} />
+      <div className='dashboard'>
+        <BlockInput maxBlocks={maxBlocks} onBlocksChange={handleMaxBlocksChange} />
+        <ERC20Graph alchemy={alchemy} maxBlocks={maxBlocks} />
+        <GasGraph alchemy={alchemy} maxBlocks={maxBlocks} currentBlock={currentBlock} />
+      </div>
     </div>
   );
 }

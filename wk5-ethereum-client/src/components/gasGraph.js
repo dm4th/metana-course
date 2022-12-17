@@ -1,5 +1,4 @@
 import React from 'react';
-import { ethers } from 'ethers'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -34,30 +33,25 @@ class GasGraph extends React.Component {
     };
 
     async componentDidMount() {
-        const alchemy = this.props.alchemy;
         try {
-            console.log(`Opening WebSocket for Block Fees`);
-            alchemy.ws.on("block", (result) => {
-                this.updateComponent(result);
-            });
+            await this.updateComponent();
         } catch (err) {
             console.error(err);
         }
     }
 
-    handleBlockChange() {
-        return this.props.block;
+    async componentDidUpdate(prevProps) {
+        try {
+            if (this.props.currentBlock !== prevProps.currentBlock) await this.updateComponent();
+        } catch (err) {
+            console.error(err);
+        }
     }
 
-    async updateComponent(result) {
+    async updateComponent() {
         const alchemy = this.props.alchemy;
-        this.setState({
-            block: result,
-            _x: this.state._x,
-            _baseFee: this.state._baseFee,
-            _gasUsedRatio: this.state._gasUsedRatio
-        })
-        const response = await alchemy.core.getBlock(result);
+        const currentBlock = this.props.currentBlock;
+        const response = await alchemy.core.getBlock(currentBlock);
         this.updateGraph(response);
     }
 
@@ -67,11 +61,12 @@ class GasGraph extends React.Component {
         const _baseFee = this.state._baseFee;
         const _gasUsedRatio = this.state._gasUsedRatio;
 
+        const blockNum = response.number;
         const resp_basefee = parseInt(response.baseFeePerGas._hex,16);
         const resp_gaslimit = parseInt(response.gasLimit._hex,16);
         const resp_gasUsed = parseInt(response.gasUsed._hex,16);
 
-        const new_len = _x.push(this.state.block);
+        const new_len = _x.push(blockNum);
         _baseFee.push(resp_basefee);
         _gasUsedRatio.push(resp_gasUsed / resp_gaslimit);
 
@@ -83,10 +78,10 @@ class GasGraph extends React.Component {
         }
         
         this.setState({
-            block: this.state.block,
+            block: blockNum,
             _x: _x,
             _baseFee: _baseFee,
-            _gasUsedRatio: _baseFee
+            _gasUsedRatio: _gasUsedRatio
         })
     }
 
@@ -94,6 +89,7 @@ class GasGraph extends React.Component {
     options () {
         return ({
             responsiveness: true,
+            maintainAspectRatio: false,
             interaction: {
               mode: 'index',
               intersect: false,
@@ -118,6 +114,8 @@ class GasGraph extends React.Component {
                 type: 'linear',
                 display: true,
                 position: 'right',
+                min: 0,
+                max: 1,
                 grid: {
                   drawOnChartArea: false,
                 },
@@ -150,7 +148,11 @@ class GasGraph extends React.Component {
 
     render () {
         return (
-            <Line className='graph gas-graph' options={this.options()} data={this.data()} onchange={this.handleBlockChange} />
+            <div className='graph-section'>
+                <div className='graph'>
+                    <Line className='gas-graph' options={this.options()} data={this.data()} />
+                </div>
+            </div>
         )
     }
 }
