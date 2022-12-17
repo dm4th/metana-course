@@ -161,6 +161,10 @@ class ERC20Graph extends React.Component {
         return ({
             responsiveness: true,
             maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false,
+            },
             plugins: {
                 legend: {
                     position: 'top'
