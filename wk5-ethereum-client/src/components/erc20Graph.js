@@ -26,7 +26,7 @@ import {
 class ERC20Graph extends React.Component {
     constructor(props) {
         super(props);
-        const address = "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619";
+        const address = "0xdAC17F958D2ee523a2206206994597C13D831ec7";
         this.state = {
             contract: address,
             name: "",
@@ -117,14 +117,23 @@ class ERC20Graph extends React.Component {
 
     updateGraph(result) {
         const max_blocks = this.props.maxBlocks;
-        const block_number = result.blockNumber;
         const _x = this.state._x;
         const _y = this.state._y;
         const arr_len = _x.length;
+        const block_number = result.blockNumber;
+        var prev_block_number = _x[arr_len-1];
 
-        if (_x[arr_len-1] === block_number) {
+        if (prev_block_number === block_number) {
             _y[arr_len-1] += 1;
         } else {
+            // handle blocks with 0 transactions
+            var block_diff = block_number - prev_block_number;
+            while (block_diff > 1) {
+                prev_block_number = prev_block_number + 1;
+                _x.push(prev_block_number);
+                _y.push(0);
+                block_diff = block_number - prev_block_number;
+            }
             // console.log(`Old Arrays:\n${_x}\n${_y}`);
             const new_len = _x.push(block_number);
             _y.push(1);
@@ -157,7 +166,7 @@ class ERC20Graph extends React.Component {
                 },
                 title: {
                     display: true,
-                    text: `${this.state.symbol}   ${this.state.name}    ${this.state.logo}`
+                    text: `${this.state.symbol}   ${this.state.name}`
                 }
             }
         })
@@ -179,14 +188,6 @@ class ERC20Graph extends React.Component {
     }
 
     render () {
-        let graph;
-        if (this.state._x.length > 0) {
-            console.log(this.state);
-            graph = <Line className='graph token-graph' options={this.options()} data={this.data()} />;
-        } else {
-            graph = <div className='token-graph'></div>;
-        };
-
         return (
             <div className='graph-section'>
                 <div className="input-div">
@@ -202,7 +203,7 @@ class ERC20Graph extends React.Component {
                         <img src={this.state.logo} alt="" className='token-logo' />
                     </p>
                 </div>
-                {graph}
+                <Line className='graph token-graph' options={this.options()} data={this.data()} />
             </div>
         )
     }
