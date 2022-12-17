@@ -160,6 +160,7 @@ class ERC20Graph extends React.Component {
     options () {
         return ({
             responsiveness: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: {
                     position: 'top'
@@ -167,6 +168,14 @@ class ERC20Graph extends React.Component {
                 title: {
                     display: true,
                     text: `${this.state.symbol}   ${this.state.name}`
+                }
+            },
+            scales: {
+                y: {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  min: 0
                 }
             }
         })
@@ -203,7 +212,9 @@ class ERC20Graph extends React.Component {
                         <img src={this.state.logo} alt="" className='token-logo' />
                     </p>
                 </div>
-                <Line className='graph token-graph' options={this.options()} data={this.data()} />
+                <div className='graph'>
+                    <Line className='token-graph' options={this.options()} data={this.data()} />
+                </div>
             </div>
         )
     }

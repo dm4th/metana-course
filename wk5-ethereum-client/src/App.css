@@ -1,8 +1,5 @@
 .App {
   text-align: left;
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: space-between;
 }
 
 .title {
@@ -19,6 +16,12 @@
   align-items: center;
   text-align: center;
   text-size-adjust: 80%;
+}
+
+.dashboard {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: space-between;
 }
 
 .input-div {
@@ -41,4 +44,11 @@
 
 .input-field {
   margin: 15px;
+}
+
+.graph {
+  height: 400px;
+  position: relative;
+  margin-bottom:"1%";
+  padding:"1%"
 }
