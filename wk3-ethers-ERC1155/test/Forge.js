@@ -121,11 +121,18 @@ describe("Forgery Contract Interaction", function () {
         it("Should Revert if a Stater mint doesn't wait for the cooldown time", async function () {
             const { ForgeToken, ForgeLogic, owner, addr1 } = await loadFixture(deployBaseForge);
             const testID = await ForgeToken.TWO();
-            const tokenAmount = await ForgeLogic.tokenAmount();
 
             // call mint starter function twice in succession to cause revert
             await ForgeLogic.connect(addr1).mintStarter(testID);
             await expect(ForgeLogic.connect(addr1).mintStarter(testID)).to.be.revertedWith("Need to wait for token cooldown!!");
+        });
+
+        it("Should Revert if the minting ID is 3 (as a proxy for IDs 3, 4, 5, 6)", async function () {
+            const { ForgeToken, ForgeLogic, owner, addr1 } = await loadFixture(deployBaseForge);
+            const testID = await ForgeToken.THREE();
+
+            // call mint starter function to cause revert
+            await expect(ForgeLogic.connect(addr1).mintStarter(testID)).to.be.revertedWith("Wrong input ID to function mintStarter!!");
         });
     });
 

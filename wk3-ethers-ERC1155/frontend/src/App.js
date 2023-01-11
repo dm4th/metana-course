@@ -7,10 +7,10 @@ import { InputButton, InputButton2 } from './components/InputButton';
 import tokenContract from './contracts/ForgeToken.json';
 import contract from './contracts/ForgeLogic.json';
 
-const tokenAddress = '0xB07093567612D05Ad979bf0495bA724E82C5016C';
+const tokenAddress = '0xBE6c6c9461E6C3ab689F8898A143B76e317431d7';
 const tokenABI = tokenContract.abi;
 
-const address = '0x99cC161297D48348f559AE83286aa01986060A62';
+const address = '0x24919854Ed1fbd32a944cd3F2D41A37cB1337875';
 const abi = contract.abi;
 
 function App() {

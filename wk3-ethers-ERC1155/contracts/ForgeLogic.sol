@@ -64,7 +64,7 @@ contract ForgeLogic is Ownable {
     }
 
     /**
-     * @dev Function to mint token IDs 0 thru 2 with relevant checks
+     * @dev Function to burn token IDs 0 thru 2 with relevant checks
      * 
      * @param id - token id to burn
      */
@@ -77,7 +77,7 @@ contract ForgeLogic is Ownable {
     }
 
     /**
-     * @dev Function to mint token IDs 0 thru 2 with relevant checks
+     * @dev Function to convert a token of any value back into a starter token (id 0, 1, or 2)
      * 
      * @param from_id - token id to burn
      * @param to_id - token id to mint

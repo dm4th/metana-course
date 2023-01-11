@@ -24,7 +24,7 @@ async function main() {
 
     // change minter address on token contract
     await ForgeToken.changeMinter(ForgeLogicAddress);
-    const minterAddress = ForgeToken._minter();
+    const minterAddress = await ForgeToken._minter();
 
     console.log(`Contracts deployed by:\t ${owner.address}`);
     console.log(`Token Contract Address:\t ${ForgeTokenAddress}`);

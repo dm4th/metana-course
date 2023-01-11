@@ -33,6 +33,16 @@ contract ForgeToken is ERC1155, Ownable {
         // check that the _minter is not the 0 address
         require(_minter != address(0), "Minter still set to 0 address");
 
+        // fix from issues
+        // check that the token ID one of the contants outlined above
+        require(id == ZERO || 
+                id == ONE || 
+                id == TWO || 
+                id == THREE || 
+                id == FOUR || 
+                id == FIVE || 
+                id == SIX, "Mint Token ID not in range");
+
         _mint(to, id, amount, "");
     }
 
