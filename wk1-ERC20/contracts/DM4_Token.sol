@@ -170,6 +170,8 @@ contract DM4thToken is ERC20 {
      * - Make sure to include a function to withdraw the Ether that other users pay into it
      */
 
+    receive() external payable {}
+
     function buyTokens() public payable {
         // check that sender is sending 1 ETH
         require(msg.value > 0 ether, "Must send more than 0 ETH!!");
