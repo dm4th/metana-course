@@ -16,6 +16,11 @@
     "@openzeppelin/hardhat-upgrades": "^1.21.0",
     "chai-bignumber": "^3.1.0",
     "chai-bn": "^0.3.1",
+    "eslint": "^8.31.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.4",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
     "ethers": "^5.7.2",
     "hardhat": "^2.12.2"
   },
