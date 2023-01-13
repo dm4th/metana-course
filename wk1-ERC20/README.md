@@ -9,3 +9,4 @@ This project demonstrates a ERC20 solidity contract with the following features:
 The contract can by found on polygon at: https://polygonscan.com/address/0xb1012678FAdb6CCecd59dfA683e539eB9B878e30#code
 
 Coverage reports can be found in the /coverage folder (100% across each column)
+Link to the commit with the completed project code: https://github.com/dm4th/metana-course/commit/2e9713b6e72d0f0da660656cacda7cfc9641d62a
