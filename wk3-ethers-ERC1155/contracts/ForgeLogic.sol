@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -53,7 +53,9 @@ contract ForgeLogic is Ownable {
         // check that the input id is between 0 and 2
         require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
         // check the cooldown timer
-        require(block.timestamp - _withdrawalTimes[id][msg.sender] > WITHDRAWAL_WAIT, "Need to wait for token cooldown!!");
+        require(
+            block.timestamp - _withdrawalTimes[id][msg.sender] > WITHDRAWAL_WAIT
+            , "Need to wait for token cooldown!!");
 
         // mint token of specific ID to recipient
         ft.mint(msg.sender, id, tokenAmount);

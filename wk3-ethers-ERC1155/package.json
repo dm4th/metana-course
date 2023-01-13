@@ -12,10 +12,17 @@
     "@openzeppelin/contracts": "^4.8.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
+    "solhint": "^3.3.7",
     "web3": "^1.8.1"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "eslint": "^8.31.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.4",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.32.0",
     "hardhat": "^2.12.3"
   }
 }

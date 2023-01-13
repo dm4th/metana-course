@@ -4,37 +4,36 @@
 // You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
 // will compile your contracts, add the Hardhat Runtime Environment's members to the
 // global scope, and execute the script.
-const hre = require("hardhat");
+const hre = require('hardhat')
 
-async function main() {
+async function main () {
+  const [owner] = await hre.ethers.getSigners()
 
-    const [owner] = await hre.ethers.getSigners();
+  // deploy token contract
+  const ForgeTokenFactory = await hre.ethers.getContractFactory('ForgeToken')
+  const ForgeToken = await ForgeTokenFactory.deploy()
+  await ForgeToken.deployed()
+  const ForgeTokenAddress = ForgeToken.address
 
-    // deploy token contract
-    const ForgeTokenFactory = await hre.ethers.getContractFactory("ForgeToken");
-    const ForgeToken = await ForgeTokenFactory.deploy();
-    await ForgeToken.deployed();
-    const ForgeTokenAddress = ForgeToken.address;
+  // deploy logic contract with address of token contract
+  const ForgeLogicFactory = await hre.ethers.getContractFactory('ForgeLogic')
+  const ForgeLogic = await ForgeLogicFactory.deploy(ForgeTokenAddress)
+  await ForgeLogic.deployed()
+  const ForgeLogicAddress = ForgeLogic.address
 
-    // deploy logic contract with address of token contract
-    const ForgeLogicFactory = await hre.ethers.getContractFactory("ForgeLogic");
-    const ForgeLogic = await ForgeLogicFactory.deploy(ForgeTokenAddress);
-    await ForgeLogic.deployed();
-    const ForgeLogicAddress = ForgeLogic.address;
+  // change minter address on token contract
+  await ForgeToken.changeMinter(ForgeLogicAddress)
+  const minterAddress = await ForgeToken._minter()
 
-    // change minter address on token contract
-    await ForgeToken.changeMinter(ForgeLogicAddress);
-    const minterAddress = await ForgeToken._minter();
-
-    console.log(`Contracts deployed by:\t ${owner.address}`);
-    console.log(`Token Contract Address:\t ${ForgeTokenAddress}`);
-    console.log(`Logic Contract Address:\t ${ForgeLogicAddress}`);
-    console.log(`Token Contract Minter:\t ${minterAddress}`);
+  console.log(`Contracts deployed by:\t ${owner.address}`)
+  console.log(`Token Contract Address:\t ${ForgeTokenAddress}`)
+  console.log(`Logic Contract Address:\t ${ForgeLogicAddress}`)
+  console.log(`Token Contract Minter:\t ${minterAddress}`)
 }
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+  console.error(error)
+  process.exitCode = 1
+})

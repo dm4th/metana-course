@@ -26,12 +26,11 @@ contract ForgeToken is ERC1155, Ownable {
     }
 
     function mint(address to, uint256 id, uint256 amount) external {
+
         // check that the caller of the contract is in fact another contract
         require(msg.sender.isContract(), "Can only mint through another contract!!");
         // check that the caller of the contract is the new minter address
         require(msg.sender == _minter, "Calling contract not set as the minter!!");
-        // check that the _minter is not the 0 address
-        require(_minter != address(0), "Minter still set to 0 address");
 
         // fix from issues
         // check that the token ID one of the contants outlined above
@@ -51,8 +50,6 @@ contract ForgeToken is ERC1155, Ownable {
         require(msg.sender.isContract(), "Can only burn through another contract!!");
         // check that the caller of the contract is the new minter address
         require(msg.sender == _minter, "Calling contract not set as the burner!!");
-        // check that the _minter is not the 0 address
-        require(_minter != address(0), "burner still set to 0 address");
 
         _burn(from, id, amount);
     }
