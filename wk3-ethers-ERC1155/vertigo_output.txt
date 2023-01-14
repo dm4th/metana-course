@@ -1,0 +1,467 @@
+Mutation testing report:
+Number of mutations:    42
+Killed:                 40 / 42
+
+Mutations:
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogicAttack.sol
+    Line nr: 35
+    Result: Killed
+    Original line:
+                 require(ft.owner() == owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+    Mutated line:
+                 require(ft.owner() != owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogicAttack.sol
+    Line nr: 35
+    Result: Killed
+    Original line:
+                 require(ft.owner() == owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+    Mutated line:
+                 require(ft.owner() != owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 35
+    Result: Killed
+    Original line:
+                 require(ft.owner() == owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+    Mutated line:
+                 require(ft.owner() != owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+    Mutated line:
+                 require(id != _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+    Mutated line:
+                 require(id == _ZERO || id != _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+    Mutated line:
+                 require(id == _ZERO || id == _ONE || id != _TWO, "Wrong input ID to function mintStarter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 56
+    Result: Lived
+    Original line:
+                     block.timestamp - _withdrawalTimes[id][msg.sender] > WITHDRAWAL_WAIT
+
+    Mutated line:
+                     block.timestamp - _withdrawalTimes[id][msg.sender] >= WITHDRAWAL_WAIT
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 90
+    Result: Killed
+    Original line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+    Mutated line:
+                 require(to_id != _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 90
+    Result: Killed
+    Original line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+    Mutated line:
+                 require(to_id == _ZERO || to_id != _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 90
+    Result: Killed
+    Original line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+    Mutated line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id != _TWO, "Can only trade for starter tokens!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 35
+    Result: Killed
+    Original line:
+                 require(ft.owner() == owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+    Mutated line:
+                 require(ft.owner() != owner(), "The owner of the ERC1155 token contract must be the same as this contract!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+    Mutated line:
+                 require(id != _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+    Mutated line:
+                 require(id == _ZERO || id != _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 require(id == _ZERO || id == _ONE || id == _TWO, "Wrong input ID to function mintStarter!!");
+
+    Mutated line:
+                 require(id == _ZERO || id == _ONE || id != _TWO, "Wrong input ID to function mintStarter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 56
+    Result: Killed
+    Original line:
+                     block.timestamp - _withdrawalTimes[id][msg.sender] > WITHDRAWAL_WAIT
+
+    Mutated line:
+                     block.timestamp - _withdrawalTimes[id][msg.sender] <= WITHDRAWAL_WAIT
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 88
+    Result: Killed
+    Original line:
+                 require(from_id != to_id, "Why are you trading a token for itself??!!");
+
+    Mutated line:
+                 require(from_id == to_id, "Why are you trading a token for itself??!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 90
+    Result: Killed
+    Original line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+    Mutated line:
+                 require(to_id != _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 90
+    Result: Killed
+    Original line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+    Mutated line:
+                 require(to_id == _ZERO || to_id != _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 90
+    Result: Killed
+    Original line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id == _TWO, "Can only trade for starter tokens!!");
+
+    Mutated line:
+                 require(to_id == _ZERO || to_id == _ONE || to_id != _TWO, "Can only trade for starter tokens!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeLogic.sol
+    Line nr: 56
+    Result: Killed
+    Original line:
+                     block.timestamp - _withdrawalTimes[id][msg.sender] > WITHDRAWAL_WAIT
+
+    Mutated line:
+                     block.timestamp + _withdrawalTimes[id][msg.sender] > WITHDRAWAL_WAIT
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 32
+    Result: Killed
+    Original line:
+                 require(msg.sender == _minter, "Calling contract not set as the minter!!");
+
+    Mutated line:
+                 require(msg.sender != _minter, "Calling contract not set as the minter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 36
+    Result: Killed
+    Original line:
+                 require(id == ZERO || 
+
+    Mutated line:
+                 require(id != ZERO || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 37
+    Result: Killed
+    Original line:
+                         id == ONE || 
+
+    Mutated line:
+                         id != ONE || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 38
+    Result: Killed
+    Original line:
+                         id == TWO || 
+
+    Mutated line:
+                         id != TWO || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 39
+    Result: Killed
+    Original line:
+                         id == THREE || 
+
+    Mutated line:
+                         id != THREE || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 40
+    Result: Killed
+    Original line:
+                         id == FOUR || 
+
+    Mutated line:
+                         id != FOUR || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 41
+    Result: Killed
+    Original line:
+                         id == FIVE || 
+
+    Mutated line:
+                         id != FIVE || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 42
+    Result: Killed
+    Original line:
+                         id == SIX, "Mint Token ID not in range");
+
+    Mutated line:
+                         id != SIX, "Mint Token ID not in range");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 51
+    Result: Killed
+    Original line:
+                 require(msg.sender == _minter, "Calling contract not set as the burner!!");
+
+    Mutated line:
+                 require(msg.sender != _minter, "Calling contract not set as the burner!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 32
+    Result: Killed
+    Original line:
+                 require(msg.sender == _minter, "Calling contract not set as the minter!!");
+
+    Mutated line:
+                 require(msg.sender != _minter, "Calling contract not set as the minter!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 36
+    Result: Killed
+    Original line:
+                 require(id == ZERO || 
+
+    Mutated line:
+                 require(id != ZERO || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 37
+    Result: Killed
+    Original line:
+                         id == ONE || 
+
+    Mutated line:
+                         id != ONE || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 38
+    Result: Killed
+    Original line:
+                         id == TWO || 
+
+    Mutated line:
+                         id != TWO || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 39
+    Result: Killed
+    Original line:
+                         id == THREE || 
+
+    Mutated line:
+                         id != THREE || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 40
+    Result: Killed
+    Original line:
+                         id == FOUR || 
+
+    Mutated line:
+                         id != FOUR || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 41
+    Result: Killed
+    Original line:
+                         id == FIVE || 
+
+    Mutated line:
+                         id != FIVE || 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 42
+    Result: Killed
+    Original line:
+                         id == SIX, "Mint Token ID not in range");
+
+    Mutated line:
+                         id != SIX, "Mint Token ID not in range");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 51
+    Result: Killed
+    Original line:
+                 require(msg.sender == _minter, "Calling contract not set as the burner!!");
+
+    Mutated line:
+                 require(msg.sender != _minter, "Calling contract not set as the burner!!");
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 44
+    Result: Killed
+    Original line:
+                 _mint(to, id, amount, "");
+
+    Mutated line:
+                 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 53
+    Result: Killed
+    Original line:
+                 _burn(from, id, amount);
+
+    Mutated line:
+                 
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 23
+    Result: Equivalent
+    Original line:
+             constructor() ERC1155("") {
+
+    Mutated line:
+             constructor()  {
+
+
+Mutation:
+    File: <path-to-files>/metana-course/wk3-ethers-ERC1155/contracts/ForgeToken.sol
+    Line nr: 56
+    Result: Killed
+    Original line:
+             function changeMinter(address newMinter) public virtual onlyOwner{
+
+    Mutated line:
+             function changeMinter(address newMinter) public virtual {
+
+

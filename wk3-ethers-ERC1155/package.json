@@ -13,7 +13,8 @@
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "solhint": "^3.3.7",
-    "web3": "^1.8.1"
+    "web3": "^1.8.1",
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.0",
