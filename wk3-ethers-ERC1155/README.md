@@ -21,3 +21,5 @@ npm start
 Using the solidity-coverage module, I've confimed 100% function, statement, and branch coverage across all contracts.
 
 I've also run mutation testing using vertigo on the smart contracts in the /contracts directory. Only 2 of 42 mutations were not killed. One mutation resulted in equivalence (did not enter a string to name the ERC1155 token). The only mutation that lived was changing the mintStarter token cooldown timer from checking that the cooldown time was greater than needed to greater than or equal to the time needed, which feels alright to me.
+
+Link to commit of fully covered & mutation tested code: https://github.com/dm4th/metana-course/commit/5b96e25091045bb668d3b82f28c30f5847f0b886
