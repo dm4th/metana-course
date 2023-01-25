@@ -33,10 +33,8 @@ describe("Merkle-Airdrop", function () {
       }
     }
     // Encode data, create the Merkle Tree, and get the root of the tree
-    // const leaves = indexStruct.map((s) =>
-    //   keccak256(s.address, s.index)
-    // );
     const tree = StandardMerkleTree.of(leaves, ["address", "uint256"]);
+    // const leafCount = 
     const root = tree.root;
     
     const AWinnieNFTFactory = await ethers.getContractFactory("AWinnieNFT");
@@ -74,19 +72,23 @@ describe("Merkle-Airdrop", function () {
 
   });
 
-  describe("NFT Minting - Expensive Index => Address Mapping vs. Cheap BitMap", function () {
+  describe("NFT Minting - Testing Expensive and Cheap Mint Functionality", function () {
+
+    /**
+     * Expensive Mint Tests
+     */
 
     it("Should allow a pre-determined user to mint an NFT expensively", async function () {
       // load the tree info with pre-computed proofs
       const { AWinnie, owner, leaves, ownerProofs } = await loadFixture(deployContractWithProof);
 
-      // load the data for the first leaf (owner leaf) index value
+      // load the data for the first leaf (owner leaf) 
       const leaf0 = leaves[0];
       const leafAddr = leaf0[0];
       expect(owner.address).to.equal(leafAddr);
       const leafIndex = leaf0[1];
 
-      // mint to the owner address (1 proof)
+      // mint to the owner address (1 proof) and emit a Claimed Event
       const proof = ownerProofs[0];
       await expect(AWinnie.connect(owner).expensiveMint(leafIndex, proof))
         .to.emit(AWinnie, "Claimed")
@@ -94,6 +96,152 @@ describe("Merkle-Airdrop", function () {
 
       // check that the NFT is now owned by the owner address
       expect(await AWinnie.ownerOf(leafIndex)).to.equal(owner.address);
+    });
+
+    it("Should revert if an address tries to expensive mint an index they aren't allocated to", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, ownerProofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) and the first leaf (to set up mrekle revert)
+      const leaf0 = leaves[0];
+      const leaf1 = leaves[1];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf1[1]; // incorrect index
+
+      // mint to the owner address (1 proof) but to the wrong index to force revert
+      const proof = ownerProofs[0];
+      await expect(AWinnie.connect(owner).expensiveMint(leafIndex, proof))
+        .to.be.revertedWith("Merkle Tree: Invalid Proof");
+    });
+
+    it("Should revert an address tries to expensive mint an index their allocated but with an incorrect proof", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, addr1Proofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) and the first leaf (to set up mrekle revert)
+      const leaf0 = leaves[0];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf0[1]; // incorrect index
+
+      // mint to the owner address (1 proof) but use the addr1 proof to cause revert
+      const proof = addr1Proofs[0];
+      await expect(AWinnie.connect(owner).expensiveMint(leafIndex, proof))
+        .to.be.revertedWith("Merkle Tree: Invalid Proof");
+    });
+
+    it("Should revert if an address tries to expensive mint a preallocated index a second time", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, ownerProofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) 
+      const leaf0 = leaves[0];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf0[1];
+
+      // mint to the owner address (1 proof) and emit a Claimed Event
+      const proof = ownerProofs[0];
+      await expect(AWinnie.connect(owner).expensiveMint(leafIndex, proof))
+        .to.emit(AWinnie, "Claimed")
+        .withArgs(leafAddr, leafIndex);
+
+      // check that the NFT is now owned by the owner address
+      expect(await AWinnie.ownerOf(leafIndex)).to.equal(owner.address);
+
+      // try to mint a second time witha  valid proof to cause revert
+      await expect(AWinnie.connect(owner).expensiveMint(leafIndex, proof))
+      .to.be.revertedWith("Expensive Mint Error: Already Minted");
+    });
+
+    /**
+     * Cheap Mint Tests
+     */
+
+    it("Should allow a pre-determined user to mint an NFT cheaply", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, ownerProofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) 
+      const leaf0 = leaves[0];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf0[1];
+
+      // mint to the owner address (1 proof) and emit a Claimed Event
+      const proof = ownerProofs[0];
+      await expect(AWinnie.connect(owner).cheapMint(leafIndex, proof))
+        .to.emit(AWinnie, "Claimed")
+        .withArgs(leafAddr, leafIndex);
+
+      // check that the NFT is now owned by the owner address
+      expect(await AWinnie.ownerOf(leafIndex)).to.equal(owner.address);
+    });
+
+    it("Should revert if an address tries to cheap mint an index they aren't allocated to", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, ownerProofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) and the first leaf (to set up mrekle revert)
+      const leaf0 = leaves[0];
+      const leaf1 = leaves[1];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf1[1]; // incorrect index
+
+      // mint to the owner address (1 proof) but to the wrong index to force revert
+      const proof = ownerProofs[0];
+      await expect(AWinnie.connect(owner).cheapMint(leafIndex, proof))
+        .to.be.revertedWith("Merkle Tree: Invalid Proof");
+    });
+
+    it("Should revert an address tries to cheap mint an index their allocated but with an incorrect proof", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, addr1Proofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) and the first leaf (to set up mrekle revert)
+      const leaf0 = leaves[0];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf0[1]; // incorrect index
+
+      // mint to the owner address (1 proof) but use the addr1 proof to cause revert
+      const proof = addr1Proofs[0];
+      await expect(AWinnie.connect(owner).cheapMint(leafIndex, proof))
+        .to.be.revertedWith("Merkle Tree: Invalid Proof");
+    });
+
+    it("Should revert if an address tries to cheap mint a preallocated index a second time", async function () {
+      // load the tree info with pre-computed proofs
+      const { AWinnie, owner, leaves, ownerProofs } = await loadFixture(deployContractWithProof);
+
+      // load the data for the first leaf (owner leaf) 
+      const leaf0 = leaves[0];
+      const leafAddr = leaf0[0];
+      expect(owner.address).to.equal(leafAddr);
+      const leafIndex = leaf0[1];
+
+      // mint to the owner address (1 proof) and emit a Claimed Event
+      const proof = ownerProofs[0];
+      await expect(AWinnie.connect(owner).cheapMint(leafIndex, proof))
+        .to.emit(AWinnie, "Claimed")
+        .withArgs(leafAddr, leafIndex);
+
+      // check that the NFT is now owned by the owner address
+      expect(await AWinnie.ownerOf(leafIndex)).to.equal(owner.address);
+
+      // try to mint a second time witha  valid proof to cause revert
+      await expect(AWinnie.connect(owner).cheapMint(leafIndex, proof))
+      .to.be.revertedWith("Cheap Mint Error: Already Minted");
+    });
+
+  });
+
+  describe("NFT Minting - Expensive Index => Address Mapping vs. Cheap BitMap Gas Savings", function () {
+
+    it("See Report at the Bottomfor ETH based gas calcs converted to USD for each of the functions in the contract", async function () {
+      return true;
     });
 
   });
