@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC721";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
@@ -14,25 +14,24 @@ contract AWinnieNFT is ERC721, Ownable {
 
     // declare globals
     bytes32 public immutable merkleRoot;
-    uint256 public constant MAX_SUPPLY = 10;
 
     // Globals for tracking how expensive a mapping of address --> bool is compared to a bitmap
-    mapping(address => bool) private expensiveMinted;
+    mapping(uint256 => address) private expensiveMinted;
     BitMaps.BitMap private minted;
 
     // event for a claim of an NFT
-    event Claimed(address account, uint256 amount);    
+    event Claimed(address account, uint256 index);    
 
     // modifiers
     // modifier for verification of merkle proof for claiming NFTs
     modifier merkleVerified(
       address account,
-      uint256 amount,
-      bytes32[] calldata merkleProof  
+      uint256 index,
+      bytes32[] memory merkleProof  
     ) {
-        bytes32 leaf = keccak256(abi.encodePacked(account, amount));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(account, index))));
         require(
-            keccak256(merkleProof, merkleRoot, leaf),
+            MerkleProof.verify(merkleProof, merkleRoot, leaf),
             "Merkle Tree: Invalid Proof"
         );
         _;
@@ -49,9 +48,19 @@ contract AWinnieNFT is ERC721, Ownable {
         return "ipfs://QmSvxH2m5SXoxB8qv4QcZXk5Qjx3p3DawQaXJHjbBfVqyC/";
     }
 
-    // function to verify Merkle Proofs for airdrops
-
-    function expensiveMint() public {
-
+    // mint the token to the calling address if they can provide the correct merkle proof
+    // update the mapping object (more expensive)
+    function expensiveMint(
+        uint256 index,
+        bytes32[] calldata merkleProof
+    ) public merkleVerified(
+        msg.sender,
+        index,
+        merkleProof
+    ) {
+        require(expensiveMinted[index] == address(0), "Expensive Mint Error: Already Minted");
+        expensiveMinted[index] = msg.sender;
+        _mint(msg.sender, index);
+        emit Claimed(msg.sender, index);
     }
 }

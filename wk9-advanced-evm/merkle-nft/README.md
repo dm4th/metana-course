@@ -1,8 +1,13 @@
-# Advanced NFT Project
+# Sample Hardhat Project
 
-## Merkle Tree Airdrop
+This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
 
-Used this tutorial to set it up: https://steveng.medium.com/performing-merkle-airdrop-like-uniswap-85e43543a592
+Try running some of the following tasks:
 
-- Step 1a: Import merkletreejs to both visualize and work with merkle trees shell```npm install merkletreejs```
-- Step 1b: Solidity function to verify merkle proofs on-chain are in the openzepplin/contracts/utils/cryptography/MerkleProof.sol file
+```shell
+npx hardhat help
+npx hardhat test
+REPORT_GAS=true npx hardhat test
+npx hardhat node
+npx hardhat run scripts/deploy.js
+```
