@@ -140,46 +140,34 @@ contract AWinnieNFT is ERC721, Ownable {
     /**
      * @dev function to commit a randomized ID value for a given index without revealing it
      * @param _index index to commit a random ID for
-     * @param _randomHash hashed random number to store for later reveal at NFT minting
+     * @param _id the new ID for the given index
+     * @param _salt salt value used to calculate the stored hash for verification
      */
-    function revealRandomId(uint256 _index, bytes32 _randomHash) public 
+    function revealRandomId(uint256 _index, uint256 _id, uint256 _salt) public 
         onlyOwner
         checkStage (
             Stages.RevealIds
         ) {
             require(hashedIdMap[_index].revealed==false, "Reveal Random ID: Index value already revealed");
             require(uint64(block.number) >= lastCommitBlock+10, "Reveal Random ID: Need to wait longer before reveal can happen");
-            require(_randomHash == hashedIdMap[_index].randomHash, "Reveal Random ID: Incorrect random hash input for this index");
-            
-            // generate a random number now between 0 & MAX_SUPPLY-1
-            uint256 randomId = uint256(_randomHash)%MAX_SUPPLY;
 
-            // Loop until we find an unused ID
-            bool unmatched = true;
-            while (unmatched) {
+            bytes32 randomHash = keccak256(abi.encodePacked(_id, _salt));
+            require(randomHash == hashedIdMap[_index].randomHash, "Reveal Random ID: Incorrect index & salt combo to verify random hash");
 
-                if (idTracker[randomId]==true) { // ID already taken
-                    if (randomId == MAX_SUPPLY-1) { // Current random ID is max value
-                        randomId=0;
-                    } else {
-                        randomId++;
-                    }
+            // check to make sure we don't have a collision... if we do go with the nuclear revert state option
+            if (idTracker[_id] == true) prevStage();
+
+            // thank god..
+            else {
+                // set correct values in hashedIdMap & idTracker
+                hashedIdMap[_index].randomId = _id;
+                hashedIdMap[_index].revealed = true;
+
+                // update state variables
+                revealedIds++;
+                if (revealedIds == MAX_SUPPLY) {
+                    nextStage();
                 }
-
-                else { // Unused ID --> break out of loop 
-                    unmatched=false;
-                }
-            }
-
-            // set correct values in hashedIdMap & idTracker
-            hashedIdMap[_index].randomId = randomId;
-            hashedIdMap[_index].revealed = true;
-            idTracker[randomId] = true;
-
-            // update state variables
-            revealedIds++;
-            if (revealedIds == MAX_SUPPLY) {
-                nextStage();
             }
         }
 
@@ -354,6 +342,24 @@ contract AWinnieNFT is ERC721, Ownable {
         }
         if ((stage == Stages.PublicSaleMint) && (publicSaleSupply == 0)) {
             nextStage();
+        }
+    }
+
+    // move us to a previous stage in the contract
+    // only occurs when something goes really wrong....
+    function prevStage() internal {
+        stage = Stages(uint(stage)-1);
+        // scenario 1: collision of randomly assigned NFT index --> ID mappings... reset it all
+        if (stage == Stages.RandomizeIds) {
+            for (uint256 i = 0; i < MAX_SUPPLY; i++) {
+                // reset randomizations
+                hashedIdMap[i].randomHash = bytes32(0);
+                idTracker[hashedIdMap[i].randomId] = false;  // also reset reveals
+                hashedIdMap[i].randomId = 0;
+                hashedIdMap[i].revealed = false;
+                committedIds = 0;
+                revealedIds = 0;
+            }
         }
     }
 }
