@@ -23,6 +23,12 @@ so that anytime we call the setTime function, we'll now call out attack function
 
 Jeez this one was difficult....
 
+## Problem 25
+
+The first step is getting the contract of the engine contract from the motorbike contract, which is as simple as getting the storage at slot 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc (based on the UUPS protocol specs).
+
+Next you need to create a Hack Contract that first calls "initialize" on the engine contract to assume the upgrader role. Once you're the upgrader, you can use the "upgradeToAndCall" function to call any arbitrary code in another contract (just a simple self destruct in this case).
+
 
 
 

