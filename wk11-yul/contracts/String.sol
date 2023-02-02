@@ -29,10 +29,7 @@ contract String {
             }
             // can return a value
             default {
-                for { let i := 0}   lt(i, index) { i:= add(i, 1)}   // need to isolate the last word
-                {
-                    _input := mul(_input, 256)                      // shift 2 bytes to the right
-                }
+                _input := shl(mul(8,index), _input)     // Shift input 2 bytes (8 bits) to the left for each index value
 
                 mstore(output, and(_input,0xff00000000000000000000000000000000000000000000000000000000000000))  // just store the first 2 bytes
             }
