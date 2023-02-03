@@ -3,15 +3,18 @@
 
 pragma solidity ^0.8.7;
 
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";     // Make sure we only run initialize once
+// import "@openzeppelin/contracts/access/Ownable.sol";                         // Need to use upgradeable version
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./WinnieNFT.sol";
 import "./DM4thToken.sol";
 
 
-contract PetcoParkingLot is Ownable {
+contract PetcoParkingLot is Initializable, OwnableUpgradeable {
     using SafeMath for uint256;
     using Address for address;
 
@@ -66,20 +69,29 @@ contract PetcoParkingLot is Ownable {
      * @param _acceptedToken address of the ERC20 token to use for payment to buy the NFT
      * @param _targetNFT address of the ERC721 contract to be used with this buying contract
      */
-    function setContracts(address _acceptedToken, address _targetNFT) public onlyOwner {
-        setToken(_acceptedToken);
-        setNFT(_targetNFT);
+    function initialize(address _acceptedToken, address _targetNFT) public initializer {
+        _setToken(_acceptedToken);
+        _setNFT(_targetNFT);
+        __Ownable_init_unchained();
         require(dm4.owner() == wnft.owner() && dm4.owner() == owner(), "The owner of the ERC20 and ERC721 token contracts must be the same and the creator of this contract!!");
     }
 
-    function setToken(address _acceptedToken) internal {
+    function setToken(address _acceptedToken) public onlyOwner {
+        _setToken(_acceptedToken);
+    }
+
+    function setNFT(address _targetNFT) public onlyOwner {
+        _setNFT(_targetNFT);
+    }
+
+    function _setToken(address _acceptedToken) internal {
         require(_acceptedToken.isContract(), "The accepted token address must be a deployed contract!!");
         dm4 = DM4thToken(_acceptedToken);
         
         emit setTokenContract(_acceptedToken);
     }
 
-    function setNFT(address _targetNFT) internal {
+    function _setNFT(address _targetNFT) internal {
         require(_targetNFT.isContract(), "The accepted NFT address must be a deployed contract!!");
         wnft = WinnieNFT(_targetNFT);
         

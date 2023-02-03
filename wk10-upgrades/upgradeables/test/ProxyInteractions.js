@@ -8,19 +8,19 @@ describe("Proxy Deployment & Interactions", function () {
 
     // deploy ERC20 proxy
     const DM4 = await ethers.getContractFactory("DM4thToken");
-    const dm4 = await upgrades.deployProxy(DM4, [0], { initializer: "changeMinter" });
+    const dm4 = await upgrades.deployProxy(DM4, ["DM4th", "DM4"], { initializer: "initialize" });
 
     // deploy ERC721 proxy
     const WNE = await ethers.getContractFactory("WinnieNFT");
-    const wne = await upgrades.deployProxy(WNE, [0], { initializer: "changeMinter" });
+    const wne = await upgrades.deployProxy(WNE, ["Winnie", "WNE"], { initializer: "initialize" });
 
     // deploy Minter proxy
     const PPL = await ethers.getContractFactory("PetcoParkingLot");
-    const ppl = await upgrades.deployProxy(PPL, [dm4.address, wne.address], { initializer: "setContracts" });
+    const ppl = await upgrades.deployProxy(PPL, [dm4.address, wne.address], { initializer: "initialize" });
 
     // Upgrade the minter addresses on each of the ERC20 and ERC721 contracts
-    await dm4.connet(owner).changeMinter(ppl.address);
-    await wne.connet(owner).changeMinter(ppl.address);
+    await dm4.connect(owner).changeMinter(ppl.address);
+    await wne.connect(owner).changeMinter(ppl.address);
 
     return { ppl, dm4, wne, owner };
   }

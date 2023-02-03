@@ -1,12 +1,16 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";     // Make sure we only run initialize once
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";                      // Need to use upgradeable version
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";                         // Need to use upgradeable version
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
-abstract contract DM4thToken is ERC20, Ownable {
+contract DM4thToken is Initializable, ERC20Upgradeable, OwnableUpgradeable {
 
     using SafeMath for uint256;
     using Address for address;
@@ -35,6 +39,12 @@ abstract contract DM4thToken is ERC20, Ownable {
     //     _minter = address(0);
     // }
 
+    function initialize(string memory name_, string memory symbol_) public initializer {
+        _minter = address(0);
+        __ERC20_init_unchained(name_, symbol_);
+        __Ownable_init_unchained();
+    }
+
     function mintTokensToAddress(address recipient, uint256 amount) public virtual {
         // Check that the caller is teh owner
         require(msg.sender == owner() || msg.sender == _minter, "You do not have the power!!");
@@ -53,8 +63,8 @@ abstract contract DM4thToken is ERC20, Ownable {
         emit BurnTokensFromAddress(target, amount);     
     }
 
-    function changeMinter(address newMinter) public virtual onlyOwner{
-        require(newMinter.isContract() || newMinter == address(0), "New Minter Address must be another contract!!");
+    function changeMinter(address newMinter) public onlyOwner{
+        require(newMinter.isContract(), "New Minter Address must be another contract!!");
         _minter = newMinter;
 
         emit ChangeMinter(newMinter);

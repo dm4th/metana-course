@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";     // Make sure we only run initialize once
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";                      // Need to use upgradeable version
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";                         // Need to use upgradeable version
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-abstract contract WinnieNFT is ERC721, Ownable {
+contract WinnieNFT is Initializable, ERC721Upgradeable, OwnableUpgradeable {
     using SafeMath for uint256;
     using Address for address;
 
     address public _minter;
 
-    uint256 private tokenSupply = 0;
+    uint256 private tokenSupply;
     uint256 public constant MAX_SUPPLY = 10;
 
     // Add events for off-chain applications
@@ -22,6 +26,13 @@ abstract contract WinnieNFT is ERC721, Ownable {
     // constructor() ERC721("Winnie", "WNE") {
     //     _minter = address(0);
     // }
+
+    function initialize(string memory name_, string memory symbol_) public initializer {
+        _minter = address(0);
+        tokenSupply = 0;
+        __ERC721_init(name_, symbol_);
+        __Ownable_init_unchained();
+    }
 
     function mint(address to) external {
         // check that we haven't exceeded the max number of tokens
