@@ -2,13 +2,10 @@
 const { loadFixture, mine } = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
-// const { ethers } = require("hardhat");
-
-// Merkle Tree Imports
-// const { MerkleTree } = require("merkletreejs");
-// const { keccak256 } = require("keccak256");
-const { StandardMerkleTree } = require("@openzeppelin/merkle-tree");
 const { ethers } = require("hardhat");
+
+// Merkle Tree Import
+const { StandardMerkleTree } = require("@openzeppelin/merkle-tree");
 
 // helper function to generate a random number
 function getRandomInt(max_value) {
@@ -59,35 +56,21 @@ describe("Merkle-Airdrop", function () {
     const MAX_SUPPLY = await AWinnie.MAX_SUPPLY();
 
     // loop for MAX_SUPPLY times to commit values for randomization later
-
     // set up helper variables
     const salt = getRandomInt(2**8); // set random salt for generating the hash values
     let idOrderedArr = [];  // store the id values we've already generated
-    let searching;
-    let randInt;
-    let randomHash;
-
-    // loop over indices
     for (var n = 0; n < MAX_SUPPLY; n++) {
-      // make sure we generate an unused ID value for this specific
-      searching = true;
-      while (searching) {
-        randInt = getRandomInt(MAX_SUPPLY);
-        if (idOrderedArr.includes(randInt)==false) searching=false;
-      }
-      // store the hash and the random index
-      randomHash = hashRandomId(randInt, salt);
-      idOrderedArr.push(randInt);
-      // commit random value
+      let randomHash = ethers.utils.keccak256(getRandomInt(MAX_SUPPLY)*salt);
+      idOrderedArr.push(randomHash);
       await AWinnie.connect(owner).commitRandomId(n, randomHash);
     }
 
-    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, salt, idOrderedArr }
+    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, idOrderedArr }
   }
 
   async function revealRandomIds() {
     // load contract from just after all of the random ID hashes have been commmitted
-    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, salt, idOrderedArr } = await loadFixture(commitRandomIds);
+    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, idOrderedArr } = await loadFixture(commitRandomIds);
     // get max supply of NFTs
     const MAX_SUPPLY = await AWinnie.MAX_SUPPLY();
     // wait 10 blocks to allow for reveal
@@ -95,7 +78,7 @@ describe("Merkle-Airdrop", function () {
 
     // loop for MAX_SUPPLY times to reveal values
     for (var n = 0; n < MAX_SUPPLY; n++) {
-      await AWinnie.connect(owner).revealRandomId(n, idOrderedArr[n], salt);
+      await AWinnie.connect(owner).revealRandomId(n, idOrderedArr[n]);
     }
 
     return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree }
@@ -206,17 +189,17 @@ describe("Merkle-Airdrop", function () {
 
       it("Should allow for the owner to reveal a random ID for a given index with the correct hash", async function () {
         // load contract from just after all of the 
-        const { AWinnie, owner, salt, idOrderedArr } = await loadFixture(commitRandomIds);
+        const { AWinnie, owner, idOrderedArr } = await loadFixture(commitRandomIds);
 
         // check that the value for reveal is false before reveal
-        const revealIndex = 3; // could be any arbitrary index < MAX SUPPLY
+        const revealIndex = getRandomInt(await AWinnie.MAX_SUPPLY());   // Use random index between 0 & MAX_SUPPLY
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.false;
 
         // wait 10 blocks to allow for reveal
         await mine(10);
 
         // reveal the random ID at a given index - don't pull value from the blockchain though
-        await AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex], salt);
+        await AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex]);
 
         // check that the reveal boolean updated to true
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.true;
@@ -224,83 +207,67 @@ describe("Merkle-Airdrop", function () {
 
       it("Should revert if we try to reveal a given index a second time", async function () {
         // load contract from just after all of the 
-        const { AWinnie, owner, salt, idOrderedArr } = await loadFixture(commitRandomIds);
+        const { AWinnie, owner, idOrderedArr } = await loadFixture(commitRandomIds);
 
         // check that the value for reveal is false before reveal
-        const revealIndex = 3; // could be any arbitrary index < MAX SUPPLY
+        const revealIndex = getRandomInt(await AWinnie.MAX_SUPPLY());   // Use random index between 0 & MAX_SUPPLY
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.false;
 
         // wait 10 blocks to allow for reveal
         await mine(10);
 
         // reveal the random ID at a given index - don't pull value from the blockchain though
-        await AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex], salt);
+        await AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex]);
         // revert on trying to reveal a second time
-        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex], salt))
+        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex]))
           .to.be.revertedWith("Reveal Random ID: Index value already revealed");
       });
 
       it("Should revert if we try to reveal before 10 blocks have passed from the final random hash commit", async function () {
         // load contract from just after all of the 
-        const { AWinnie, owner, salt, idOrderedArr } = await loadFixture(commitRandomIds);
+        const { AWinnie, owner, idOrderedArr } = await loadFixture(commitRandomIds);
 
         // check that the value for reveal is false before reveal
-        const revealIndex = 3; // could be any arbitrary index < MAX SUPPLY
+        const revealIndex = getRandomInt(await AWinnie.MAX_SUPPLY());   // Use random index between 0 & MAX_SUPPLY
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.false;
 
         // comment out the wait 10 blocks to allow for reveal to force revert
         // await mine(10);
 
         // reveal the random ID at a given index - don't pull value from the blockchain though
-        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex], salt))
+        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex]))
           .to.be.revertedWith("Reveal Random ID: Need to wait longer before reveal can happen");
       });
 
       it("Should revert if we try to use an incorrect random ID to reveal an index", async function () {
         // load contract from just after all of the 
-        const { AWinnie, owner, salt, idOrderedArr } = await loadFixture(commitRandomIds);
+        const { AWinnie, owner, idOrderedArr } = await loadFixture(commitRandomIds);
 
         // check that the value for reveal is false before reveal
-        const revealIndex = 3; // could be any arbitrary index < MAX SUPPLY
+        const revealIndex = getRandomInt((await AWinnie.MAX_SUPPLY())-1);   // Use random index between 0 & MAX_SUPPLY - 1
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.false;
 
         // wait 10 blocks to allow for reveal
         await mine(10);
 
         // try to reveal the next index's ID value as a proxy for giving the wrong ID 
-        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex+1], salt))
-          .to.be.revertedWith("Reveal Random ID: Incorrect index & salt combo to verify random hash");
-      });
-
-      it("Should revert if we try to use an incorrect salt to reveal an index", async function () {
-        // load contract from just after all of the 
-        const { AWinnie, owner, salt, idOrderedArr } = await loadFixture(commitRandomIds);
-
-        // check that the value for reveal is false before reveal
-        const revealIndex = 3; // could be any arbitrary index < MAX SUPPLY
-        expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.false;
-
-        // wait 10 blocks to allow for reveal
-        await mine(10);
-
-        // try to reveal the ID while using salt+1
-        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex], salt+1))
-          .to.be.revertedWith("Reveal Random ID: Incorrect index & salt combo to verify random hash");
+        await expect(AWinnie.connect(owner).revealRandomId(revealIndex, idOrderedArr[revealIndex+1]))
+          .to.be.revertedWith("Reveal Random ID: Incorrect random hash input for this index");
       });
 
       it("Should revert if an address other than the owner tries to reveal", async function () {
         // load contract from just after all of the 
-        const { AWinnie, owner, addr1, salt, idOrderedArr } = await loadFixture(commitRandomIds);
+        const { AWinnie, owner, addr1, idOrderedArr } = await loadFixture(commitRandomIds);
 
         // check that the value for reveal is false before reveal
-        const revealIndex = 3; // could be any arbitrary index < MAX SUPPLY
+        const revealIndex = getRandomInt(await AWinnie.MAX_SUPPLY());   // Use random index between 0 & MAX_SUPPLY
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(revealIndex)).to.be.false;
 
         // wait 10 blocks to allow for reveal
         await mine(10);
 
         // call from another address than the owner
-        await expect(AWinnie.connect(addr1).revealRandomId(revealIndex, idOrderedArr[revealIndex], salt))
+        await expect(AWinnie.connect(addr1).revealRandomId(revealIndex, idOrderedArr[revealIndex]))
           .to.be.revertedWith("Ownable: caller is not the owner");
       });
 
@@ -320,7 +287,7 @@ describe("Merkle-Airdrop", function () {
         expect(await AWinnie.connect(owner).gethashedIdMapReveal(0)).to.be.false;
 
         // immediately try to reveal the committed value
-        await expect(AWinnie.connect(owner).revealRandomId(0, randomId, salt))
+        await expect(AWinnie.connect(owner).revealRandomId(0, randomHash))
           .to.be.revertedWith("State Machine Error: Incorrect Stage of Contract Lifecycle");
       });
 
