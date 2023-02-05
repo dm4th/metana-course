@@ -17,23 +17,25 @@ function hashRandomId(id, salt) {
   return ethers.utils.solidityKeccak256(['uint256', 'uint256'], [id, salt]);
 }
 
-describe("Merkle-Airdrop", function () {
+describe("Advanced NFT", function () {
   async function deployMerkleContract() {
     // create addresses and assign each of them to receive 1 NFT
     const [owner, addr0, addr1, addr2, addr3, addr4] = await ethers.getSigners();
     let users = [
-      { address: owner.address, amount: 1 },
-      { address: addr0.address, amount: 1 },
-      { address: addr1.address, amount: 2 },
+      { signer: owner, amount: 1 },
+      { signer: addr0, amount: 1 },
+      { signer: addr1, amount: 2 },
     ];
     // loop over amounts for each user and create an array of user --> bitmap index for keeping track of minting
     let index = 0;
-    let leaves = []
+    let leaves = [];
+    let signersArr = [];  // needed to keep track of which signers hav claim to which indices (rather than just addresses)
     for (var u = 0; u < users.length; u++) {
       for (var a = 0; a < users[u].amount; a++) {
         leaves.push( 
-          [users[u].address, index]
+          [users[u].signer.address, index]
         );
+        signersArr.push(users[u].signer);
         index++;
       }
     }
@@ -46,12 +48,12 @@ describe("Merkle-Airdrop", function () {
     const AWinnieNFTFactory = await ethers.getContractFactory("AWinnieNFT");
     const AWinnie = await AWinnieNFTFactory.deploy(root, airdropSupply);
     await AWinnie.deployed();
-    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree };
+    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, signersArr };
   }
 
   async function commitRandomIds() {
     // load contract from just after deployment
-    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree } = await loadFixture(deployMerkleContract);
+    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, signersArr } = await loadFixture(deployMerkleContract);
     // get max supply of NFTs
     const MAX_SUPPLY = await AWinnie.MAX_SUPPLY();
 
@@ -65,12 +67,12 @@ describe("Merkle-Airdrop", function () {
       await AWinnie.connect(owner).commitRandomId(n, randomHash);
     }
 
-    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, idOrderedArr }
+    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, idOrderedArr, signersArr }
   }
 
   async function revealRandomIds() {
     // load contract from just after all of the random ID hashes have been commmitted
-    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, idOrderedArr } = await loadFixture(commitRandomIds);
+    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, idOrderedArr, signersArr } = await loadFixture(commitRandomIds);
     // get max supply of NFTs
     const MAX_SUPPLY = await AWinnie.MAX_SUPPLY();
     // wait 10 blocks to allow for reveal
@@ -81,7 +83,18 @@ describe("Merkle-Airdrop", function () {
       await AWinnie.connect(owner).revealRandomId(n, idOrderedArr[n]);
     }
 
-    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree }
+    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, signersArr }
+  }
+
+  async function mintAllocatedNFTs() {
+    // load contract from just after all of the random IDs have been revealed
+    const { AWinnie, owner, addr0, addr1, addr2, addr3, addr4, leaves, tree, signersArr } = await loadFixture(revealRandomIds);
+    // cheapMint all leaves
+    for (var n = 0; n < leaves.length; n++) {
+      await AWinnie.connect(signersArr[n]).cheapAirdropMint(leaves[n][1], tree.getProof(n));
+    }
+
+    return { AWinnie, owner, addr0, addr1, addr2, addr3, addr4 }
   }
 
   describe("NFT Contract Deployment", function () {
@@ -394,19 +407,19 @@ describe("Merkle-Airdrop", function () {
 
       it("Should allow a pre-determined user to mint an NFT cheaply", async function () {
         // load the tree info with revealed random IDs
-        const { AWinnie, owner, leaves, tree } = await loadFixture(revealRandomIds);
+        const { AWinnie, addr0, leaves, tree } = await loadFixture(revealRandomIds);
   
         // load the data for the first leaf (owner leaf) 
-        const leaf0 = leaves[0];
-        const leafAddr = leaf0[0];
-        expect(owner.address).to.equal(leafAddr);
-        const leafIndex = leaf0[1];
+        const leaf1 = leaves[1];
+        const leafAddr = leaf1[0];
+        expect(addr0.address).to.equal(leafAddr);
+        const leafIndex = leaf1[1];
   
-        // retrive the merkle proof for the owner (will be the first proof)
-        const proof = tree.getProof(0);
+        // retrive the merkle proof for addr0 (will be the second proof)
+        const proof = tree.getProof(1);
   
         // mint to the owner address (1 proof) and emit a Claimed Event
-        await expect(AWinnie.connect(owner).cheapAirdropMint(leafIndex, proof))
+        await expect(AWinnie.connect(addr0).cheapAirdropMint(leafIndex, proof))
           .to.emit(AWinnie, "Claimed")
           .withArgs(leafAddr, leafIndex);
   
@@ -486,6 +499,31 @@ describe("Merkle-Airdrop", function () {
 
   });
 
+  describe("NFT Sale - PreSale & Public Sale Functionality", function () {
+
+    /**
+     * PreSale Tests
+     */
+    describe("NFT Sale - PreSale", function () {
+
+      it("Should allow a user to mint an NFT in the PreSale window", async function () {
+        // load the tree info with revealed random IDs
+        const { AWinnie, owner, addr2 } = await loadFixture(mintAllocatedNFTs);
+
+        // get the PreSale price and next index to be minted
+        const price = await AWinnie.connect(addr2).getPreSalePrice();
+        // Call the mint function
+        await AWinnie.connect(addr2).preSaleMint(1, { value: price });
+        // Ge the index that was just minted
+        const mintedIndex = await AWinnie.connect(owner).getTokenSupply() - 1;
+
+        // check that the owner of the NFT at the given index == the address that just bought it
+        expect(await AWinnie.connect(addr2).getOwnerByIndex(mintedIndex))
+          .to.equal(addr2.address);
+      });
   
+    });
+
+  });
 
 });

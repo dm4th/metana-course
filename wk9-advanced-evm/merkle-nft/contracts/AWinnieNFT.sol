@@ -98,7 +98,7 @@ contract AWinnieNFT is ERC721, Ownable {
      * Constructor
      * @param _merkleRoot root of the merkle tree to verify that a given address is allowed to mint an NFT in the presale
      * @param _airdropSupply number of tokens to be airdropped. 
-     * PreSale will be the next 25% of remaining tokens, and public sale is the remainder form there (we're ok with rounding down the presale)
+     * PreSale will be the next 25% of remaining tokens, and public sale is the remainder from there (we're ok with rounding down the presale)
      */
     constructor(bytes32 _merkleRoot, uint256 _airdropSupply) ERC721("Advanced WinnieNFT", "AWN") {
         require(
@@ -124,18 +124,19 @@ contract AWinnieNFT is ERC721, Ownable {
         onlyOwner
         checkStage (
             Stages.RandomizeIds
-        ) {
-            require(hashedIdMap[_index].randomHash == bytes32(0), "Commit Random ID Error: Index Already Committed");
-            hashedIdMap[_index].randomHash = _randomHash;
-            hashedIdMap[_index].revealed = false;
-            lastCommitBlock = uint64(block.number);
+        ) 
+    {
+        require(hashedIdMap[_index].randomHash == bytes32(0), "Commit Random ID Error: Index Already Committed");
+        hashedIdMap[_index].randomHash = _randomHash;
+        hashedIdMap[_index].revealed = false;
+        lastCommitBlock = uint64(block.number);
 
-            // update state variables
-            committedIds++;
-            if (committedIds == MAX_SUPPLY) {
-                nextStage();
-            }
+        // update state variables
+        committedIds++;
+        if (committedIds == MAX_SUPPLY) {
+            nextStage();
         }
+    }
 
     /**
      * @dev function to commit a randomized ID value for a given index without revealing it
@@ -146,42 +147,43 @@ contract AWinnieNFT is ERC721, Ownable {
         onlyOwner
         checkStage (
             Stages.RevealIds
-        ) {
-            require(hashedIdMap[_index].revealed==false, "Reveal Random ID: Index value already revealed");
-            require(uint64(block.number) >= lastCommitBlock+10, "Reveal Random ID: Need to wait longer before reveal can happen");
-            require(_randomHash == hashedIdMap[_index].randomHash, "Reveal Random ID: Incorrect random hash input for this index");
+        ) 
+    {
+        require(hashedIdMap[_index].revealed==false, "Reveal Random ID: Index value already revealed");
+        require(uint64(block.number) >= lastCommitBlock+10, "Reveal Random ID: Need to wait longer before reveal can happen");
+        require(_randomHash == hashedIdMap[_index].randomHash, "Reveal Random ID: Incorrect random hash input for this index");
 
-            // generate a random number now between 0 & MAX_SUPPLY-1
-            uint256 randomId = uint256(_randomHash)%MAX_SUPPLY;
+        // generate a random number now between 0 & MAX_SUPPLY-1
+        uint256 randomId = uint256(_randomHash)%MAX_SUPPLY;
 
-            // Loop until we find an unused ID
-            bool unmatched = true;
-            while (unmatched) {
+        // Loop until we find an unused ID
+        bool unmatched = true;
+        while (unmatched) {
 
-                if (idTracker[randomId]==true) { // ID already taken
-                    if (randomId == MAX_SUPPLY-1) { // Current random ID is max value
-                        randomId=0;
-                    } else {
-                        randomId++;
-                    }
-                }
-
-                else { // Unused ID --> break out of loop 
-                    unmatched=false;
+            if (idTracker[randomId]==true) { // ID already taken
+                if (randomId == MAX_SUPPLY-1) { // Current random ID is max value
+                    randomId=0;
+                } else {
+                    randomId++;
                 }
             }
 
-            // set correct values in hashedIdMap & idTracker
-            hashedIdMap[_index].randomId = randomId;
-            hashedIdMap[_index].revealed = true;
-            idTracker[randomId] = true;
-
-            // update state variables
-            revealedIds++;
-            if (revealedIds == MAX_SUPPLY) {
-                nextStage();
+            else { // Unused ID --> break out of loop 
+                unmatched=false;
             }
         }
+
+        // set correct values in hashedIdMap & idTracker
+        hashedIdMap[_index].randomId = randomId;
+        hashedIdMap[_index].revealed = true;
+        idTracker[randomId] = true;
+
+        // update state variables
+        revealedIds++;
+        if (revealedIds == MAX_SUPPLY) {
+            nextStage();
+        }
+    }
 
     /**
      * @dev this function uses a mapping of index => boolean to check if an NFT has already been minted --> do not use
@@ -195,12 +197,16 @@ contract AWinnieNFT is ERC721, Ownable {
             merkleProof
         ) checkStage (
             Stages.AirdropMint
-        ) {
-            require(expensiveAirdropMinted[index] == false, "Expensive Mint Error: Already Minted");
-            expensiveAirdropMinted[index] = true;
-            safeMintIndex(msg.sender, index);
-            emit Claimed(msg.sender, index);
-        }
+        ) 
+    {
+        require(expensiveAirdropMinted[index] == false, "Expensive Mint Error: Already Minted");
+        expensiveAirdropMinted[index] = true;
+        safeMintIndex(msg.sender, index);
+        emit Claimed(msg.sender, index);
+
+        // adjust Lifecycle Status
+        adjustAirdropSupply();
+    }
 
     /**
      * @dev this function uses a bitmap to check if an NFT has already been minted --> use this
@@ -214,14 +220,61 @@ contract AWinnieNFT is ERC721, Ownable {
             merkleProof
         ) checkStage (
             Stages.AirdropMint
-        ) {
-            require(bitmapCheck(index) == false, "Cheap Mint Error: Already Minted");
-            bitmapSet(index);
-            safeMintIndex(msg.sender, index);
-            emit Claimed(msg.sender, index);
+        ) 
+    {
+        require(bitmapCheck(index) == false, "Cheap Mint Error: Already Minted");
+        bitmapSet(index);
+        safeMintIndex(msg.sender, index);
+        emit Claimed(msg.sender, index);
+
+        // adjust Lifecycle Status
+        adjustAirdropSupply();
+    }
+
+    /**
+     * @dev this function handles minting during the "PreSaleMint" lifecycle phase of the contract
+     * @param _quantity number of NFTs to mint
+     */
+    function preSaleMint(uint256 _quantity) public payable
+        checkStage (
+            Stages.PreSaleMint
+        )
+    {
+        require(_quantity <= preSaleSupply, "PreSale Mint: Mint Quantity Overflow PreSale Supply");
+        require(_quantity*preSalePrice == msg.value, "PreSale Mint: Incorrect Payment Amount for Mint");
+        for (uint256 i=0; i<_quantity; i++) {
+            safeMintIndex(msg.sender, i + tokenSupply);
         }
 
-    // get the Public Sale Price
+        // adjust Lifecycle Status
+        adjustPreSaleSupply(_quantity);
+    }
+
+    /**
+     * @dev this function handles minting during the "PreMint" lifecycle phase of the contract
+     * @param _quantity number of NFTs to mint
+     */
+    function publicSaleMint(uint256 _quantity) public payable
+        checkStage (
+            Stages.PublicSaleMint
+        )
+    {
+        require(_quantity+tokenSupply <= getPublicSaleSupply(), "PublicSale Mint: Mint Quantity Overflow PublicSale Supply");
+        require(_quantity*getPublicSalePrice() == msg.value, "PublicSale Mint: Incorrect Payment Amount for Mint");
+        for (uint256 i=0; i<_quantity; i++) {
+            safeMintIndex(msg.sender, i + tokenSupply);
+        }
+
+        // adjust Lifecycle Status
+        adjustPublicSaleSupply(_quantity);
+    }
+
+    // make sure we can withdraw ETH from mint payments
+    function withdrawBalance() external onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
+    }
+
+    // get the Pre Sale Price
     function getPreSalePrice() public view returns (uint256) {
         return preSalePrice;
     }
@@ -229,6 +282,11 @@ contract AWinnieNFT is ERC721, Ownable {
     // get the Public Sale Price
     function getPublicSalePrice() public view returns (uint256) {
         return publicSalePrice;
+    }
+
+    // get the owner of an NFT ID by the index in the array
+    function getOwnerByIndex(uint256 _index) public view returns (address) {
+        return ownerOf(hashedIdMap[_index].randomId);
     }
 
     /**
@@ -250,27 +308,32 @@ contract AWinnieNFT is ERC721, Ownable {
         return publicSaleSupply;
     }
 
-    // retain abaility to change presale price
+    // function to return the current tokenSupply value. restricted to only owner
+    function getTokenSupply() public view onlyOwner returns (uint256) {
+        return tokenSupply;
+    }
+
+    // retain ability to change presale price
     function setPreSalePrice(uint256 _newPrice) public onlyOwner {
         preSalePrice = _newPrice;
     }
 
-    // retain abaility to change presale price
+    // retain ability to change public sale price
     function setPublicSalePrice(uint256 _newPrice) public onlyOwner {
         publicSalePrice = _newPrice;
     }
 
-    // retain abaility to change presale price
+    // retain ability to change presale price
     function gethashedIdMapHash(uint256 _index) public view onlyOwner returns (bytes32) {
         return hashedIdMap[_index].randomHash;
     }
 
-    // retain abaility to change presale price
+    // retain ability to change presale price
     function gethashedIdMapId(uint256 _index) public view onlyOwner returns (uint256) {
         return hashedIdMap[_index].randomId;
     }
 
-    // retain abaility to change presale price
+    // retain ability to change presale price
     function gethashedIdMapReveal(uint256 _index) public view onlyOwner returns (bool) {
         return hashedIdMap[_index].revealed;
     }
@@ -319,18 +382,20 @@ contract AWinnieNFT is ERC721, Ownable {
     }
 
     // adjust the preSaleSupply variable and move us to the next state if needed
-    function adjustPreSaleSupply() internal checkStage(Stages.PreSaleMint) {
-        preSaleSupply--;
-        tokenSupply++;
+    function adjustPreSaleSupply(uint256 _quantity) internal checkStage(Stages.PreSaleMint) {
+        preSaleSupply -= _quantity;
+        tokenSupply += _quantity;
+        require(preSaleSupply >= 0, "Fatal Error: PreSale Supply Negative");
         if (preSaleSupply == 0) {
             nextStage();
         }
     }
 
     // adjust the publicSaleSupply variable and move us to the next state if needed
-    function adjustPublicSaleSupply() internal checkStage(Stages.PublicSaleMint) {
-        publicSaleSupply--;
-        tokenSupply++;
+    function adjustPublicSaleSupply(uint256 _quantity) internal checkStage(Stages.PublicSaleMint) {
+        publicSaleSupply -= _quantity;
+        tokenSupply += _quantity;
+        require(publicSaleSupply >= 0, "Fatal Error: PublicSaleSupply Supply Negative");
         if (publicSaleSupply == 0) {
             nextStage();
         }
@@ -356,4 +421,7 @@ contract AWinnieNFT is ERC721, Ownable {
             nextStage();
         }
     }
+
+    receive() external payable {}
+    fallback() external payable {}
 }
