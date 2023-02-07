@@ -7,51 +7,62 @@ import { InputButton, InputButton2 } from './components/InputButton';
 import tokenContract from './contracts/ForgeToken.json';
 import contract from './contracts/ForgeLogic.json';
 
-const tokenAddress = '0xBE6c6c9461E6C3ab689F8898A143B76e317431d7';
+function getRandomInt(max_value) {
+  return Math.floor(Math.random() * max_value);
+}
+
+const tokenAddress = '0xe94f12742EE91C0e18DE5B7edE6b9Af628492e22';
 const tokenABI = tokenContract.abi;
 
-const address = '0x24919854Ed1fbd32a944cd3F2D41A37cB1337875';
+const address = '0x9d37668eeE2EEf278F5C9EaD0213f88d7B2b4415';
 const abi = contract.abi;
 
 function App() {
 
-  // connect metamask
-  const [currentAccount, setCurrentAccount] = useState(null);
-  const checkWalletIsConnected = async () => { 
-    const { ethereum } = window;
-    if (!ethereum) {
-      console.log("Metamask Not Connected");
-      return;
-    } else console.log("Metamask Connected!!");
+  // connect to wallets
+  const [wallets, setWallets] = useState(null);
+  const [currentWallet, setCurrentWallet] = useState(null);
 
-    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-
-    if (accounts.length !== 0) {
-      const account = accounts[0];
-      console.log("Connected Account: ", account);
-      setCurrentAccount(account);
-    } else console.log("No account found...")
+  const getWallets = () => {
+    // make a call to get the JSON object for wallets
+    fetch('./wallets.json', {
+      headers : {
+        'Content-Type' : 'application/json',
+        'Accept' : 'application/json'
+      }
+    }).then(function(resp){
+      return resp.json();
+    }).then(function(walletJSON){
+      console.log(`Wallets JSON: ${walletJSON}`);
+      setWallets(walletJSON);
+    });
   }
 
-  const connectWalletHandler = async () => { 
-    const { ethereum } = window;
+  const checkWalletIsConnected = async () => { 
+    if (wallets.length===0) {
+      console.log("No Wallets Stored");
+      return;
+    } else {
+      console.log("Wallets Found!!")
+      setCurrentWallet(wallets[0]);
+    };
+  }
 
-    if (!ethereum) alert("Install Metamask Before Proceeding");
-
+  const createWalletHandler = async () => { 
     try {
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      console.log("Connected Account: ", accounts[0]);
-      setCurrentAccount(accounts[0]);
+      const newWallet = await ethers.Wallet.createRandom({  });
+      console.log("Created New Wallet: ", newWallet);
+      setCurrentWallet(newWallet);
     } catch (err) {
       console.log(err);
     }
   }
 
-  const connectWalletButton = () => {
+  const createWalletStarter = () => {
     return (
-      <div className='connect-div'>
-        <button onClick={connectWalletHandler} className='cta-button connect-wallet-button'>
-          Connect Wallet
+      <div className='starter-div'>
+        <button onClick={createWalletHandler} className='cta-button create-wallet-button'>
+          Create New Wallet
         </button>
       </div>
     )
@@ -381,11 +392,14 @@ function App() {
       </div>
     )
   }
-
+  
+  useEffect(() => {
+    getWallets();
+  }, [])
   
   useEffect(() => {
     checkWalletIsConnected();
-  }, [currentAccount])
+  }, [currentWallet])
 
   useEffect(() => {
     fetchMaticBalance();
@@ -409,7 +423,7 @@ function App() {
     <div className="App">
       <h1 className="title-text">Welcome to the Forge!</h1>
       <div>
-        {currentAccount ? tokenLayout() : connectWalletButton()}
+        {currentWallet ? tokenLayout() : createWalletStarter()}
       </div>
     </div>
   );

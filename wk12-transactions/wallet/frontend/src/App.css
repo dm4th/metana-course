@@ -9,7 +9,7 @@
   text-align: center;
 }
 
-.connect-div {
+.starter-div {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -65,7 +65,7 @@
   text-align: center;
 }
 
-.connect-wallet-button {
+.create-wallet-button {
   background: rgb(32, 129, 226);
 }
 
