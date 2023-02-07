@@ -1,0 +1,91 @@
+.App {
+  margin: 100px;
+}
+
+.title-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.connect-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.token-display {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.token-container {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: space-between;
+}
+
+.token-section {
+  text-align: left;
+  padding: 5px;
+}
+
+.balance {
+  text-align: center;
+  align-items: center;
+  padding: 5px;
+  margin: 5px;
+  border: none;
+  border-radius: 12px;
+}
+
+.cta-button {
+  padding: 10px;
+  margin: 5px;
+  border: none;
+  border-radius: 12px;
+  min-width: 250px;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.input-form {
+  padding: 10px;
+  font-size: 18px;
+}
+
+.selector {
+  position: relative;
+  background-color: lightgray;
+  left: 5px;
+  width: 150px;
+  text-align: center;
+}
+
+.connect-wallet-button {
+  background: rgb(32, 129, 226);
+}
+
+.mint-button {
+  background: rgb(67, 171, 51);
+}
+
+.burn-button {
+  background: red;
+}
+
+.transfer-button {
+  background: darkgoldenrod;
+}
+
+.matic {
+  background-color: plum;
+  color: blueviolet;
+}
+
+.token-balance {
+  background-color: lightgoldenrodyellow;
+}
