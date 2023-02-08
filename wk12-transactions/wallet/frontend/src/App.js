@@ -3,13 +3,10 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { InputForm } from './components/InputForm';
 import { InputButton, InputButton2 } from './components/InputButton';
+import WalletConnector from './components/WalletConnector';
 
 import tokenContract from './contracts/ForgeToken.json';
 import contract from './contracts/ForgeLogic.json';
-
-function getRandomInt(max_value) {
-  return Math.floor(Math.random() * max_value);
-}
 
 const tokenAddress = '0xe94f12742EE91C0e18DE5B7edE6b9Af628492e22';
 const tokenABI = tokenContract.abi;
@@ -20,22 +17,17 @@ const abi = contract.abi;
 function App() {
 
   // connect to wallets
-  const [wallets, setWallets] = useState(null);
+  const [wallets, setWallets] = useState([]);
   const [currentWallet, setCurrentWallet] = useState(null);
 
-  const getWallets = () => {
-    // make a call to get the JSON object for wallets
-    fetch('./wallets.json', {
-      headers : {
-        'Content-Type' : 'application/json',
-        'Accept' : 'application/json'
-      }
-    }).then(function(resp){
-      return resp.json();
-    }).then(function(walletJSON){
-      console.log(`Wallets JSON: ${walletJSON}`);
-      setWallets(walletJSON);
-    });
+  const getWallets = async () => {
+    const walletStorage = JSON.parse(localStorage.getItem('walletStorage'));
+    if (walletStorage) {
+      setWallets(walletStorage);
+    } else {
+      setWallets([]);
+    }
+    console.log(walletStorage);
   }
 
   const checkWalletIsConnected = async () => { 
@@ -48,23 +40,14 @@ function App() {
     };
   }
 
-  const createWalletHandler = async () => { 
-    try {
-      const newWallet = await ethers.Wallet.createRandom({  });
-      console.log("Created New Wallet: ", newWallet);
-      setCurrentWallet(newWallet);
-    } catch (err) {
-      console.log(err);
-    }
+  const handleWalletChange = (wallets, currWallet) => { 
+    setWallets(wallets)
+    setCurrentWallet(currWallet);
   }
 
   const createWalletStarter = () => {
     return (
-      <div className='starter-div'>
-        <button onClick={createWalletHandler} className='cta-button create-wallet-button'>
-          Create New Wallet
-        </button>
-      </div>
+      <WalletConnector wallets={wallets} onWalletChange={handleWalletChange} />
     )
   }
   
@@ -374,6 +357,7 @@ function App() {
   const tokenLayout = () => {
     return (
       <div className='token-display'>
+        <WalletConnector wallets={wallets} onWalletChange={handleWalletChange} />
         <div className="token-container">
           {starterLayout()}
           {higherLayout()}

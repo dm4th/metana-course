@@ -9,11 +9,13 @@
   text-align: center;
 }
 
-.starter-div {
+.wallet-div {
   display: flex;
   justify-content: center;
   align-items: center;
+  vertical-align: top;
   text-align: center;
+  flex-direction: column;
 }
 
 .token-display {
@@ -57,6 +59,14 @@
   font-size: 18px;
 }
 
+.wallet-selector-div {
+  width: 90%;
+}
+
+.wallet-button-div {
+  width: 75%;
+}
+
 .selector {
   position: relative;
   background-color: lightgray;
@@ -65,8 +75,16 @@
   text-align: center;
 }
 
+.wallet-selector {
+  width: 100%;
+}
+
 .create-wallet-button {
   background: rgb(32, 129, 226);
+}
+
+.clear-wallet-button {
+  background: red;
 }
 
 .mint-button {

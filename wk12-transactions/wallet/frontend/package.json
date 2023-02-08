@@ -14,7 +14,8 @@
     "react-dom": "^18.2.0",
     "react-dropdown-select": "^4.9.3",
     "react-select": "^5.7.0",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "write-json-file": "^5.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -41,6 +42,7 @@
     ]
   },
   "devDependencies": {
+    "fs": "^0.0.1-security",
     "react-scripts": "^5.0.1"
   }
 }
