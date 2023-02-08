@@ -68,7 +68,7 @@
 }
 
 .wallet-selector-div {
-  width: 33%;
+  width: 50%;
 }
 
 .wallet-button-div {
@@ -107,9 +107,9 @@
   background: darkgoldenrod;
 }
 
-.matic {
-  background-color: plum;
-  color: blueviolet;
+.eth-balance {
+  background-color: rgb(236,240,241);
+  color: rgb(60,60,61);
 }
 
 .token-balance {

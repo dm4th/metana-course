@@ -28,9 +28,11 @@ class WalletConnector extends React.Component {
     
     async createWalletHandler() { 
         try {
+            // create new wallet
             const newWallet = ethers.Wallet.createRandom({  });
             console.log("Creating New Wallet: ", newWallet.address);
 
+            // build structure of what data we'll need to hold for the wallet
             const walletStruct = {
                 address: newWallet.address,
                 publicKey: newWallet.publicKey,
@@ -38,6 +40,7 @@ class WalletConnector extends React.Component {
                 transactions: []
             };
 
+            // store list of available addresses
             let walletsArr = JSON.parse(await localStorage.getItem('walletStorage'));
             if (walletsArr) {
                 walletsArr.push(newWallet.address);
@@ -45,14 +48,18 @@ class WalletConnector extends React.Component {
                 walletsArr = [newWallet.address];
             }
 
+            // send ETH to new wallet
+            await this.sendETH(newWallet.address, ethers.utils.parseEther("0.01"));
+
+            // save wallet info to local browser storage
             await localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
             await localStorage.setItem(newWallet.address, JSON.stringify(walletStruct));
 
+            // set app state to the new wallet
             await this.setState({
                 wallets: walletsArr,
                 currentWallet: walletStruct
             });
-
             this.props.onWalletChange(walletsArr, walletStruct);
         } catch (err) {
             console.log(err);
@@ -68,6 +75,24 @@ class WalletConnector extends React.Component {
         });
 
         this.props.onWalletChange([], null);
+    }
+
+    async sendETH(addr, amt) {
+        // use metamask on goerli to seed a new account with ETH
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const tx = await signer.sendTransaction({
+                to: addr,
+                value: amt
+            })
+            console.log(`TX for Seeding ETH: https://goerli.etherscan.io/tx/${tx.hash}`);
+            await tx.wait();
+            const newBalance = ethers.utils.parseEther(await provider.getBalance(addr));
+            console.log(`Done\n${addr} balance: ${newBalance} ETH`);
+        } catch(err) {
+            console.log(err);
+        }
     }
 
     walletDisp() {

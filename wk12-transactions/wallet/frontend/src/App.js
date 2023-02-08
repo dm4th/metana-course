@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';import { Network, Alchemy } from 'alchemy-sdk';
+
 import './App.css';
 import { InputForm } from './components/InputForm';
 import { InputButton, InputButton2 } from './components/InputButton';
@@ -14,7 +15,14 @@ const tokenABI = tokenContract.abi;
 const address = '0x9d37668eeE2EEf278F5C9EaD0213f88d7B2b4415';
 const abi = contract.abi;
 
+const settings = {
+    apiKey: "zkCsLZok-qTh7OqEcRSduThUfqhmIbR2",
+    network: Network.ETH_GOERLI,
+};
+
 function App() {
+  // create provider object to interact with the blockchain
+  const alchemy = new Alchemy(settings);
 
   // connect to wallets
   const [wallets, setWallets] = useState(JSON.parse(localStorage.getItem('walletStorage')));
@@ -258,28 +266,24 @@ function App() {
 
 
   // get MATIC balance
-  const [maticBalance, setMaticBalance] = useState(0);
+  const [ethBalance, setEthBalance] = useState(0);
   
-  const fetchMaticBalance = async () => {
+  const fetchETHBalance = async () => {
     try {
-      const { ethereum } = window;
-
-      if(ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        let maticBalance = ethers.utils.formatEther(await (await signer.getBalance()).toString());
-        maticBalance = Math.round(maticBalance * 1e2) / 1e2;
-        setMaticBalance(maticBalance);
-      } else console.log('Ethereum Object does not exist');
+      if (currentWallet) {
+        let ethBalance = ethers.utils.formatEther(await (await alchemy.core.getBalance(currentWallet.address)).toString());
+        ethBalance = Math.round(ethBalance * 1e4) / 1e4;
+        setEthBalance(ethBalance);
+      }
     } catch (err) {
       console.log(err);
     }
   }
 
-  const displayMaticLayout = () => {
+  const displayETHLayout = () => {
     return (
-      <div className='balance matic'>
-        <h2>MATIC Balance -- {maticBalance}</h2>
+      <div className='balance eth-balance'>
+        <h2>ETH Balance -- {ethBalance}</h2>
       </div>
     )
   }
@@ -349,7 +353,7 @@ function App() {
           {transferLayout()}
         </div>
         <div className="token-container">
-          {displayMaticLayout()}
+          {displayETHLayout()}
           {displayBalanceLayout(balance0, 0)}
           {displayBalanceLayout(balance1, 1)}
           {displayBalanceLayout(balance2, 2)}
@@ -363,14 +367,15 @@ function App() {
   }
 
   useEffect(() => {
-    fetchMaticBalance();
+    fetchETHBalance();
     fetchTokenBalances();
   }, [
+    currentWallet,
     inputStarterValue, 
     inputHigherValue, 
     inputTransferValue, 
     outputTransferValue,
-    maticBalance,
+    ethBalance,
     balance0,
     balance1,
     balance2,
