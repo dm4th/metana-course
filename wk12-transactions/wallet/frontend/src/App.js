@@ -17,28 +17,8 @@ const abi = contract.abi;
 function App() {
 
   // connect to wallets
-  const [wallets, setWallets] = useState([]);
+  const [wallets, setWallets] = useState(JSON.parse(localStorage.getItem('walletStorage')));
   const [currentWallet, setCurrentWallet] = useState(null);
-
-  const getWallets = async () => {
-    const walletStorage = JSON.parse(localStorage.getItem('walletStorage'));
-    if (walletStorage) {
-      setWallets(walletStorage);
-    } else {
-      setWallets([]);
-    }
-    console.log(walletStorage);
-  }
-
-  const checkWalletIsConnected = async () => { 
-    if (wallets.length===0) {
-      console.log("No Wallets Stored");
-      return;
-    } else {
-      console.log("Wallets Found!!")
-      setCurrentWallet(wallets[0]);
-    };
-  }
 
   const handleWalletChange = (wallets, currWallet) => { 
     setWallets(wallets)
@@ -46,9 +26,15 @@ function App() {
   }
 
   const createWalletStarter = () => {
-    return (
-      <WalletConnector wallets={wallets} onWalletChange={handleWalletChange} />
-    )
+    if (wallets) {
+      return (
+        <WalletConnector wallets={wallets} onWalletChange={handleWalletChange} />
+      )
+    } else {
+      return (
+        <WalletConnector wallets={[]} onWalletChange={handleWalletChange} />
+      )
+    }
   }
   
 
@@ -357,7 +343,6 @@ function App() {
   const tokenLayout = () => {
     return (
       <div className='token-display'>
-        <WalletConnector wallets={wallets} onWalletChange={handleWalletChange} />
         <div className="token-container">
           {starterLayout()}
           {higherLayout()}
@@ -376,14 +361,6 @@ function App() {
       </div>
     )
   }
-  
-  useEffect(() => {
-    getWallets();
-  }, [])
-  
-  useEffect(() => {
-    checkWalletIsConnected();
-  }, [currentWallet])
 
   useEffect(() => {
     fetchMaticBalance();
@@ -407,7 +384,8 @@ function App() {
     <div className="App">
       <h1 className="title-text">Welcome to the Forge!</h1>
       <div>
-        {currentWallet ? tokenLayout() : createWalletStarter()}
+        {createWalletStarter()}
+        {currentWallet ? tokenLayout() : null}
       </div>
     </div>
   );

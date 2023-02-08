@@ -11,51 +11,75 @@ class WalletConnector extends React.Component {
 
         this.handleChange = this.handleChange.bind(this);
         this.createWalletHandler = this.createWalletHandler.bind(this);
+        this.clearWalletsHandler = this.clearWalletsHandler.bind(this);
     };
 
-    handleChange(event) {
+    async handleChange(event) {
         event.preventDefault();
-        this.setState({
+        
+        const walletStruct = JSON.parse(await localStorage.getItem(event.target.value));
+
+        await this.setState({
             wallets: this.state.wallets,
-            currentWallet: event.target.values[0]
+            currentWallet: walletStruct
         })
-        this.props.onWalletChange(event.target.values[0]);
-        console.log(this.state);
+        this.props.onWalletChange(this.state.wallets, walletStruct);
     }
     
     async createWalletHandler() { 
         try {
-          const newWallet = ethers.Wallet.createRandom({  });
-          console.log("Creating New Wallet: ", newWallet.address);
+            const newWallet = ethers.Wallet.createRandom({  });
+            console.log("Creating New Wallet: ", newWallet.address);
 
-          let walletsArr = JSON.parse(localStorage.getItem('walletStorage'));
-          if (walletsArr) {
-            walletsArr.push(newWallet.address);
-          } else {
-            walletsArr = [newWallet.address];
-          }
+            const walletStruct = {
+                address: newWallet.address,
+                publicKey: newWallet.publicKey,
+                privateKey: newWallet.privateKey,
+                transactions: []
+            };
 
-          localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
+            let walletsArr = JSON.parse(await localStorage.getItem('walletStorage'));
+            if (walletsArr) {
+                walletsArr.push(newWallet.address);
+            } else {
+                walletsArr = [newWallet.address];
+            }
 
-          await this.changeWallets(walletsArr, newWallet.address);
-          this.props.onWalletChange(newWallet.address);
-          console.log(this.state);
+            await localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
+            await localStorage.setItem(newWallet.address, JSON.stringify(walletStruct));
+
+            await this.setState({
+                wallets: walletsArr,
+                currentWallet: walletStruct
+            });
+
+            this.props.onWalletChange(walletsArr, walletStruct);
         } catch (err) {
-          console.log(err);
+            console.log(err);
         }
-      }
-
-    async clearWalletsHandler() {
-        localStorage.removeItem('walletStorage');
-        await this.changeWallets([], null);
-        this.props.onWalletChange(null);
     }
 
-    async changeWallets(arr, value) {
+    async clearWalletsHandler() {
+        await localStorage.clear();
+
         this.setState({
-            wallets: arr,
-            currentWallet: value
+            wallets: [],
+            currentWallet: null
         });
+
+        this.props.onWalletChange([], null);
+    }
+
+    walletDisp() {
+        return (
+            <p>Current Wallet: {this.state.currentWallet.address}</p>
+        )
+    }
+
+    noWalletDisp() {
+        return (
+            <p>Please select a Wallet</p>
+        )
     }
 
     render () {
@@ -63,7 +87,10 @@ class WalletConnector extends React.Component {
             <div className="wallet-div">
                 <div className='wallet-selector-div'>
                     <form className='wallet-selector'>
-                        <select className="selector wallet-selector" onChange={this.handleChange} defaultValue={this.currentWallet}>
+                        <select className="selector wallet-selector" onChange={this.handleChange} defaultValue={this.state.currentWallet}>
+                            <option key="" value="">
+                                Select a Wallet...
+                            </option>
                             {this.state.wallets.map((address) =>
                                 <option key={address} value={address}>
                                     {address}
@@ -76,11 +103,12 @@ class WalletConnector extends React.Component {
                     <button onClick={this.createWalletHandler} className='cta-button create-wallet-button'>
                     Create New Wallet
                     </button>
-                </div>
-                <div className='wallet-button2-div'>
                     <button onClick={this.clearWalletsHandler} className='cta-button clear-wallet-button'>
                     Clear Wallets
                     </button>
+                </div>
+                <div className='wallet-transactions-div'>
+                    {this.state.currentWallet ? this.walletDisp() : this.noWalletDisp()}
                 </div>
             </div>
         )
