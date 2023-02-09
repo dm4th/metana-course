@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
-import { useEffect, useState } from 'react';import { Network, Alchemy } from 'alchemy-sdk';
+import { useEffect, useState } from 'react';
+import { Network, Alchemy } from 'alchemy-sdk';
 
 import './App.css';
 import { InputForm } from './components/InputForm';
@@ -16,7 +17,7 @@ const address = '0x9d37668eeE2EEf278F5C9EaD0213f88d7B2b4415';
 const abi = contract.abi;
 
 const settings = {
-    apiKey: "zkCsLZok-qTh7OqEcRSduThUfqhmIbR2",
+    apiKey: process.env.REACT_APP_ALCHEMY_API,
     network: Network.ETH_GOERLI,
 };
 
@@ -55,21 +56,37 @@ function App() {
 
   const mintStarterHandler = async (value) => { 
     try {
-      const { ethereum } = window;
+        // estimate gas prices
+      const provider = await alchemy.config.getProvider();
+      const gasPriceEstimate = await (await provider.getGasPrice()).toNumber();
 
-      if(ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const logicContract = new ethers.Contract(address, abi, signer);
+        // get a contract instance to estimate gas usage by sending from the current wallet
+      const wallet = new ethers.Wallet(currentWallet.privateKey, provider);
+      const logicContract = new ethers.Contract(address, abi, wallet);
+      const gasLimitEstimate = await (await logicContract.estimateGas.mintStarter(value)).toNumber();
 
-        console.log(`Minting Starter: ${value}`);
-        let tx = await logicContract.connect(signer).mintStarter(value);
+        // calc nonce
+      const nonceCalc = currentWallet.transactions.length;
 
-        console.log(`Minting Now...\nTX: https://polygonscan.com/tx/${tx.hash}`);
-        await tx.wait();
+        // calc data payload
+      const functionSelector = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('mintStarter(uint256)'));
+      console.log(functionSelector);
+      console.log(functionSelector.slice(0,10));
 
-        console.log('Done!!')
-      } else console.log('Ethereum Object does not exist');
+      // create transaction
+      const tx = {
+        nonce: ethers.utils.hexlify(nonceCalc),
+        gasPrice: ethers.utils.hexlify(gasPriceEstimate),
+        gasLimit: ethers.utils.hexlify(gasLimitEstimate),
+        to: address,
+        value: ethers.utils.parseEther(0).toHexString(),
+        data: ethers.utils.hexlify(value.toString)
+      }
+
+      //sign transaciton
+      // tx.sign
+
+      provider.sendTransaction()
     } catch (err) {
       console.log(err);
     }
