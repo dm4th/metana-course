@@ -16,10 +16,19 @@ const tokenABI = tokenContract.abi;
 const address = '0x9d37668eeE2EEf278F5C9EaD0213f88d7B2b4415';
 const abi = contract.abi;
 
+// RPC Settings
 const settings = {
     apiKey: process.env.REACT_APP_ALCHEMY_API,
     network: Network.ETH_GOERLI,
 };
+
+// Domain Separator for Message Signing
+const domainSeparator = {
+  name: "DM4th Forge",
+  version: "1",
+  chainId: 5,   // Goerli Chain ID
+  verifyingContract: address
+}
 
 function App() {
   // create provider object to interact with the blockchain
@@ -69,24 +78,31 @@ function App() {
       const nonceCalc = currentWallet.transactions.length;
 
         // calc data payload
-      const functionSelector = ethers.utils.keccak256(ethers.utils.toUtf8Bytes('mintStarter(uint256)'));
-      console.log(functionSelector);
-      console.log(functionSelector.slice(0,10));
+      const functionSelector = ethers.utils.keccak256(
+        ethers.utils.toUtf8Bytes('mintStarter(uint256)')
+      ).slice(0,10);
+      const argHex = ethers.utils.hexZeroPad(
+        ethers.utils.hexlify(Number(value)), 32
+      );
+      const dataPayload = ethers.utils.hexConcat([functionSelector, argHex]);
 
-      // create transaction
-      const tx = {
+      // create message
+      const msg = {
         nonce: ethers.utils.hexlify(nonceCalc),
         gasPrice: ethers.utils.hexlify(gasPriceEstimate),
         gasLimit: ethers.utils.hexlify(gasLimitEstimate),
         to: address,
-        value: ethers.utils.parseEther(0).toHexString(),
-        data: ethers.utils.hexlify(value.toString)
+        value: ethers.utils.parseEther("0").toHexString(),
+        data: dataPayload,
+        chainId: 5  // Goerli Chain ID
       }
+
+      console.log(msg);
 
       //sign transaciton
       // tx.sign
 
-      provider.sendTransaction()
+      // provider.sendTransaction()
     } catch (err) {
       console.log(err);
     }
