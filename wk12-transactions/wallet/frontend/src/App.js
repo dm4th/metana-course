@@ -6,6 +6,7 @@ import './App.css';
 import { InputForm } from './components/InputForm';
 import { InputButton, InputButton2 } from './components/InputButton';
 import WalletConnector from './components/WalletConnector';
+import { msgTypes, domainData } from './components/TypedDataStructs';
 
 import tokenContract from './contracts/ForgeToken.json';
 import contract from './contracts/ForgeLogic.json';
@@ -21,14 +22,6 @@ const settings = {
     apiKey: process.env.REACT_APP_ALCHEMY_API,
     network: Network.ETH_GOERLI,
 };
-
-// Domain Separator for Message Signing
-const domainSeparator = {
-  name: "DM4th Forge",
-  version: "1",
-  chainId: 5,   // Goerli Chain ID
-  verifyingContract: address
-}
 
 function App() {
   // create provider object to interact with the blockchain
@@ -87,7 +80,7 @@ function App() {
       const dataPayload = ethers.utils.hexConcat([functionSelector, argHex]);
 
       // create message
-      const msg = {
+      const msg_1 = {
         nonce: ethers.utils.hexlify(nonceCalc),
         gasPrice: ethers.utils.hexlify(gasPriceEstimate),
         gasLimit: ethers.utils.hexlify(gasLimitEstimate),
@@ -96,6 +89,13 @@ function App() {
         data: dataPayload,
         chainId: 5  // Goerli Chain ID
       }
+
+      const msg_2 = JSON.stringify({
+        types: msgTypes,
+        domain: domainData,
+        primaryType: 'mintStarter',
+        message: msg_1
+      })
 
       console.log(msg);
 
