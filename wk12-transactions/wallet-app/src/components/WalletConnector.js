@@ -112,9 +112,12 @@ class WalletConnector extends React.Component {
             <div className="wallet-div">
                 <div className='wallet-selector-div'>
                     <form className='wallet-selector'>
-                        <select className="selector wallet-selector" onChange={this.handleChange} defaultValue={this.state.currentWallet}>
+                        <label for="wallet">
+                            Select a Wallet
+                        </label>
+                        <select name="wallet" className="selector wallet-selector" onChange={this.handleChange} defaultValue={this.state.currentWallet}>
                             <option key="" value="">
-                                Select a Wallet...
+                                ...
                             </option>
                             {this.state.wallets.map((address) =>
                                 <option key={address} value={address}>
@@ -124,6 +127,9 @@ class WalletConnector extends React.Component {
                         </select>
                     </form>
                 </div>
+                <div className='wallet-transactions-div'>
+                    {this.state.currentWallet ? this.walletDisp() : this.noWalletDisp()}
+                </div>
                 <div className='wallet-button-div'>
                     <button onClick={this.createWalletHandler} className='cta-button create-wallet-button'>
                     Create New Wallet
@@ -131,9 +137,6 @@ class WalletConnector extends React.Component {
                     <button onClick={this.clearWalletsHandler} className='cta-button clear-wallet-button'>
                     Clear Wallets
                     </button>
-                </div>
-                <div className='wallet-transactions-div'>
-                    {this.state.currentWallet ? this.walletDisp() : this.noWalletDisp()}
                 </div>
             </div>
         )
