@@ -50,7 +50,10 @@ class WalletConnector extends React.Component {
     }
 
     async clearWalletsHandler() {
-        await localStorage.clear();
+        for (let w=0; w<this.props.wallets.length; w++) {
+            await localStorage.removeItem(this.props.wallets[w]);
+        }
+        await localStorage.removeItem('walletStorage');
         this.props.onWalletChange([], null);
     }
 

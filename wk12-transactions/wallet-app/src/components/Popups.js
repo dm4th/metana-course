@@ -56,6 +56,10 @@ export const PasswordAskPopup = ({ onSubmit, errorFlag, progress }) => {
         onSubmit(e.target[0].value);
     }
 
+    const handleCancel = () => {
+        onSubmit(null);
+    }
+
     const errorBlock = () => {
         return (
             <p className="input-error">Incorrect Password</p>
@@ -78,9 +82,14 @@ export const PasswordAskPopup = ({ onSubmit, errorFlag, progress }) => {
                         <br></br>
                         <input type="password" className="popup-form-control" id="password-capture" placeholder="Password" />
                         <br></br>
-                        <button className="popup-form-control submit-button" type="submit">
-                        Submit
-                        </button>
+                        <div className="popup-button-grouping">
+                            <button className="popup-form-control submit-button" type="submit">
+                            Submit
+                            </button>
+                            <button className="popup-form-control cancel-button" type="button" onClick={handleCancel}>
+                            Cancel
+                            </button>
+                        </div>
                     </div>
                 </form>
                 <div className="password-message-div">
@@ -98,6 +107,10 @@ export const SeedAskPopup = ({ onSubmit, errorFlag, dupeFlag }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(e.target[0].value);
+    }
+
+    const handleCancel = () => {
+        onSubmit(null);
     }
 
     const errorBlock = () => {
@@ -122,9 +135,12 @@ export const SeedAskPopup = ({ onSubmit, errorFlag, dupeFlag }) => {
                         <div>
                             <textarea rows="3" cols="50" className="popup-form-control seed-input" id="seed-capture" />
                         </div>
-                        <div>
+                        <div className="popup-button-grouping">
                             <button className="popup-form-control submit-button" type="submit">
                             Submit
+                            </button>
+                            <button className="popup-form-control cancel-button" type="button" onClick={handleCancel}>
+                            Cancel
                             </button>
                         </div>
                     </div>

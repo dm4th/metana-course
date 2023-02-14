@@ -3,9 +3,6 @@ import React from 'react';
 class NetworkSelector extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            settings: this.props.alchemySettings
-        };
 
         this.handleChange = this.handleChange.bind(this);
     };
@@ -23,13 +20,13 @@ class NetworkSelector extends React.Component {
                         Select a Network
                     </label>
                     <select name='network' className="selector network-selector" onChange={this.handleChange} defaultValue="ETH - Goerli">
-                        <option key="ETH - Goerli" value={this.state.settings.Goerli}>
+                        <option key="ETH - Goerli" value="ETH - Goerli">
                             ETH - Goerli
                         </option>
-                        <option key="ETH - Mainnet" value={this.state.settings.Ethereum}>
+                        <option key="ETH - Mainnet" value="ETH - Mainnet">
                             ETH - Mainnet
                         </option>
-                        <option key="Polygon" value={this.state.settings.Polygon}>
+                        <option key="Polygon" value="Polygon">
                             Polygon
                         </option>
                     </select>

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Network, Alchemy, Wallet } from 'alchemy-sdk';
+import { Network, Alchemy, Wallet, Utils } from 'alchemy-sdk';
 
 import './App.css';
-import WalletConnector from './components/WalletConnector';
 import NetworkSelector from './components/NetworkSelector';
+import WalletConnector from './components/WalletConnector';
+import TokenTable from './components/TokenTable';
 import { 
   MnemonicPopup, 
   PasswordCapturePopup, 
@@ -37,12 +38,24 @@ function App() {
   );
 
   const handleNetworkChange = (alcSettings) => { 
-    setAlchemy(new Alchemy(alcSettings));
+    switch (alcSettings) {
+      case "ETH - Goerli":
+        setAlchemy(new Alchemy(alchemySettings.Goerli));
+        break;
+      case "ETH - Mainnet":
+        setAlchemy(new Alchemy(alchemySettings.Ethereum));
+        break;
+      case "Polygon":
+        setAlchemy(new Alchemy(alchemySettings.Polygon));
+        break;
+      default:
+        break;
+    }
   }
 
   const networkSelector = () => {
     return (
-      <NetworkSelector alchemySettings={alchemySettings} onNetworkChange={handleNetworkChange} />
+      <NetworkSelector onNetworkChange={handleNetworkChange} />
     )
   }
 
@@ -102,23 +115,30 @@ function App() {
   }
 
   const handleSubmitPassword = async (password) => {
-    // check for the correct password
-    setSubmitPasswordErr(false);
-    const encryptedJson = await JSON.parse(localStorage.getItem(potentialAddress)); 
-    let newWallet;
-    try {
-      newWallet = await Wallet.fromEncryptedJson(encryptedJson, password, setSubmitPasswordProgress);
-
-      setCurrentWallet(newWallet);
-      setCurrentAddress(newWallet.address);
-      setPotentialAddress('');
-      setSubmitPassword(false);
+    if (password) {
+      // Password submitted
+      // check for the correct password
       setSubmitPasswordErr(false);
-      setSubmitPasswordProgress(null);
-    } catch (err) {
-      console.log(err);
-      setSubmitPasswordErr(true);
-      setSubmitPasswordProgress(null);
+      const encryptedJson = await JSON.parse(localStorage.getItem(potentialAddress)); 
+      let newWallet;
+      try {
+        newWallet = await Wallet.fromEncryptedJson(encryptedJson, password, setSubmitPasswordProgress);
+  
+        setCurrentWallet(newWallet);
+        setCurrentAddress(newWallet.address);
+        setPotentialAddress('');
+        setSubmitPassword(false);
+        setSubmitPasswordErr(false);
+        setSubmitPasswordProgress(null);
+      } catch (err) {
+        console.log(err);
+        setSubmitPasswordErr(true);
+        setSubmitPasswordProgress(null);
+      }
+    }
+    else {
+      // cancel button hit
+      handleAskPassword('', false);
     }
   }
 
@@ -132,39 +152,85 @@ function App() {
   }
 
   const handleSubmitSeed = async (seed) => {
-    // check for the correct password
-    setSubmitSeedErr(false);
-    setSubmitSeedDupe(false);
-    try {
-      // check for valid checksum
-      const newWallet = await Wallet.fromMnemonic(seed);
+    if (seed) {
+      // seed submitted
+      // check for the correct password
+      setSubmitSeedErr(false);
+      setSubmitSeedDupe(false);
+      try {
+        // check for valid checksum
+        const newWallet = await Wallet.fromMnemonic(seed);
 
-      if (await JSON.parse(localStorage.getItem(newWallet.address))) {
-        // wallet already imported
-        setSubmitSeedDupe(true);
-      } else {
-        // successful update state for wallets
-        let walletsArr = wallets;
-        walletsArr.push(newWallet.address);
-        setWallets(walletsArr);
-        setCurrentAddress(newWallet.address);
-        setCurrentWallet(newWallet);
-        await localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
-  
-        // ask for a password for the new wallet
-        setSubmitSeed(false);
-        setGetPassword(true);
+        if (await JSON.parse(localStorage.getItem(newWallet.address))) {
+          // wallet already imported
+          setSubmitSeedDupe(true);
+        } else {
+          // successful update state for wallets
+          let walletsArr = wallets;
+          walletsArr.push(newWallet.address);
+          setWallets(walletsArr);
+          setCurrentAddress(newWallet.address);
+          setCurrentWallet(newWallet);
+          await localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
+    
+          // ask for a password for the new wallet
+          setSubmitSeed(false);
+          setGetPassword(true);
+        }
+      } catch(err) {
+        // invalid seed phrase
+        console.log(err);
+        setSubmitSeedErr(true);
       }
-    } catch(err) {
-      // invalid seed phrase
-      console.log(err);
-      setSubmitSeedErr(true);
     }
-
-    console.log(currentWallet);
+    else {
+      // cancel submitted
+      handleAskSeed(false);
+    }
   }
 
 
+
+  // display wallet information
+
+  // state to hold token info
+  const [tokenBalances, setTokenBalances] = useState([]);
+
+  const retrieveTokenBalances = async () => {
+    if (currentAddress) {
+      let balances = [];
+      try {
+        const resp = await alchemy.core.getTokenBalances(currentAddress);
+        for (let t = 0; t < resp.tokenBalances.length; t++) {
+          balances.push(
+            await retrieveTokenMetadata(resp.tokenBalances[t].contractAddress, resp.tokenBalances[t].tokenBalance)
+          );
+        }
+        setTokenBalances(balances)
+      } catch (err) {
+        console.log(currentAddress);
+        console.log(balances);
+        console.log(err);
+      }
+    } else {
+      setTokenBalances([]);
+    }
+  }
+
+  const retrieveTokenMetadata = async (contractAddress, hexBalance) => {
+    const metaData = await alchemy.core.getTokenMetadata(contractAddress);
+    const number_options = { 
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2 
+    };
+    const decBalance = Number(Utils.formatUnits(hexBalance, metaData.decimals)).toLocaleString('en', number_options);
+    return {
+      symbol: metaData.symbol,
+      name: metaData.name,      
+      logo: metaData.logo,
+      balance: decBalance
+    }
+  }
 
 
 
@@ -179,6 +245,12 @@ function App() {
               askPassword={handleAskPassword}
               askSeed={handleAskSeed}
             />
+  }
+
+  const tokenTable = () => {
+    return (
+      <TokenTable balances={tokenBalances} />
+    )
   }
 
   const mnemonicPopup = () => {
@@ -206,9 +278,12 @@ function App() {
   }
 
 
-  // useEffect(() => {
-  //   setWallets
-  // }, [])
+  useEffect(() => {
+    retrieveTokenBalances();
+  }, [
+    alchemy,
+    currentAddress
+  ])
 
 
   return (
@@ -219,6 +294,9 @@ function App() {
       </div>
       <div>
         {walletConnector()}
+      </div>
+      <div>
+        {tokenTable()}
       </div>
       {showMnemonic ? mnemonicPopup() : null }
       {getPassword ? getPasswordPopup() : null }
