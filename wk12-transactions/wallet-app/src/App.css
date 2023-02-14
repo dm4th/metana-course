@@ -27,12 +27,117 @@
   flex-direction: column;
 }
 
+.popup-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.popup-container .popup {
+  z-index: 1;
+  /* width: 350px;
+  height: 220px; */
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 5px;
+  position: relative;
+  animation: animate 0.3s;
+}
+
+.popup .message {
+  display: flex;
+  align-items: center;
+  vertical-align: auto;
+  text-align: center;
+  width: 66%;
+  flex-wrap: wrap;
+  padding: 5px;
+  border: none;
+  font-style: italic;
+}
+
+.popup .seed-phrase {
+  background: lightgrey;
+  display: flex;
+  align-items: center;
+  vertical-align: auto;
+  text-align: center;
+  width: 66%;
+  flex-wrap: wrap;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+}
+
+.popup-form-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: auto;
+  text-align: center;
+  width: 66%;
+  padding: 10px;
+  justify-content: space-between;
+  border: none;
+}
+
+.popup-form-control {
+  margin: 10px;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.submit-button {
+  color: white;
+  background-color: #007bff;
+  border: none;
+  cursor: pointer;
+}
+
+.password-capture {
+  border-color: lightslategray;
+}
+
 .wallet-button-div {
   display: flex;
   justify-content: center;
   align-items: center;
   vertical-align: top;
   text-align: center;
+}
+
+.wallet-disp-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  text-align: center;
+  padding: 5px;
+}
+
+.wallet-disp {
+  background-color: lightgreen;
+  color: darkgreen;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.no-wallet-disp {
+  background-color: lightpink;
+  color: darkred;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 .balance {
@@ -102,4 +207,17 @@
 
 .clear-wallet-button {
   background: red;
+}
+
+.seed-phrase-button {
+  background: darkred;
+}
+
+@keyframes animate {
+  from {
+    transform: scale(0.5);
+  }
+  to {
+    transform: scale(1);
+  }
 }

@@ -8,12 +8,10 @@ class NetworkSelector extends React.Component {
         };
 
         this.handleChange = this.handleChange.bind(this);
-        console.log(this.state);
     };
 
     async handleChange(event) {
         event.preventDefault();
-        console.log(event);
         this.props.onNetworkChange(event.target.value);
     }
 
@@ -21,7 +19,7 @@ class NetworkSelector extends React.Component {
         return (
             <div className="network-div">
                 <form className='network-form'>
-                    <label for='network'>
+                    <label htmlFor='network'>
                         Select a Network
                     </label>
                     <select name='network' className="selector network-selector" onChange={this.handleChange} defaultValue="ETH - Goerli">
