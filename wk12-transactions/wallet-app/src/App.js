@@ -7,7 +7,8 @@ import NetworkSelector from './components/NetworkSelector';
 import { 
   MnemonicPopup, 
   PasswordCapturePopup, 
-  PasswordAskPopup 
+  PasswordAskPopup,
+  SeedAskPopup
 } from './components/Popups';
 
 // const ethers = require("@nomiclabs/hardhat-ethers");
@@ -48,25 +49,31 @@ function App() {
 
 
   // connect to wallet & handle change and creation of new wallets
+
+  // state to handle the current wallet and list of available wallets
   const [wallets, setWallets] = useState(JSON.parse(localStorage.getItem('walletStorage')));
+  const [currentAddress, setCurrentAddress] = useState(null);
   const [currentWallet, setCurrentWallet] = useState(null);
-  // state to disply mnemonic phrase for the user
-  const [showMnemonic, setShowMnemonic] = useState(false);
-  const [seedPhrase, setSeedPhrase] = useState('');
-  // state to allow the app to store a password for easier wallet retrieval
-  const [getPassword, setGetPassword] = useState(false);
-  // state to ask for password for an alreaady created wallet
-  const [submitPassword, setSubmitPassword] = useState(false);
-  const [potentialAddress, setPotentialAddress] = useState('');
-  const [submitPasswordErr, setSubmitPasswordErr] = useState(false);
-  const [submitPasswordProgress, setSubmitPasswordProgress] = useState(null);
 
   const handleWalletChange = async (wallets, newWallet) => { 
     setWallets(wallets);
     setCurrentWallet(newWallet);
 
+    if (newWallet) {
+      setCurrentAddress(newWallet.address);
+    } else {
+      setCurrentAddress(null);
+    }
+
     await localStorage.setItem('walletStorage', JSON.stringify(wallets));
   }
+
+
+  // state to disply mnemonic phrase for the user
+  const [showMnemonic, setShowMnemonic] = useState(false);
+  const [seedPhrase, setSeedPhrase] = useState('');
+  // state to allow the app to store a password for easier wallet retrieval
+  const [getPassword, setGetPassword] = useState(false);
 
   const handleSeed = (phrase, show) => { 
     setShowMnemonic(show);
@@ -83,6 +90,12 @@ function App() {
     await localStorage.setItem(currentWallet.address, JSON.stringify(encryptedJSON));
   }
 
+  // state to ask for password for an alreaady created wallet
+  const [submitPassword, setSubmitPassword] = useState(false);
+  const [potentialAddress, setPotentialAddress] = useState('');
+  const [submitPasswordErr, setSubmitPasswordErr] = useState(false);
+  const [submitPasswordProgress, setSubmitPasswordProgress] = useState(null);
+
   const handleAskPassword = (walletAddress, show) => { 
     setSubmitPassword(show);
     setPotentialAddress(walletAddress);
@@ -97,6 +110,7 @@ function App() {
       newWallet = await Wallet.fromEncryptedJson(encryptedJson, password, setSubmitPasswordProgress);
 
       setCurrentWallet(newWallet);
+      setCurrentAddress(newWallet.address);
       setPotentialAddress('');
       setSubmitPassword(false);
       setSubmitPasswordErr(false);
@@ -108,14 +122,62 @@ function App() {
     }
   }
 
+  // state to ask for a mneumonic seed phrase to import a new wallet
+  const [submitSeed, setSubmitSeed] = useState(false);
+  const [submitSeedErr, setSubmitSeedErr] = useState(false);
+  const [submitSeedDupe, setSubmitSeedDupe] = useState(false);
+
+  const handleAskSeed = (show) => { 
+    setSubmitSeed(show);
+  }
+
+  const handleSubmitSeed = async (seed) => {
+    // check for the correct password
+    setSubmitSeedErr(false);
+    setSubmitSeedDupe(false);
+    try {
+      // check for valid checksum
+      const newWallet = await Wallet.fromMnemonic(seed);
+
+      if (await JSON.parse(localStorage.getItem(newWallet.address))) {
+        // wallet already imported
+        setSubmitSeedDupe(true);
+      } else {
+        // successful update state for wallets
+        let walletsArr = wallets;
+        walletsArr.push(newWallet.address);
+        setWallets(walletsArr);
+        setCurrentAddress(newWallet.address);
+        setCurrentWallet(newWallet);
+        await localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
+  
+        // ask for a password for the new wallet
+        setSubmitSeed(false);
+        setGetPassword(true);
+      }
+    } catch(err) {
+      // invalid seed phrase
+      console.log(err);
+      setSubmitSeedErr(true);
+    }
+
+    console.log(currentWallet);
+  }
+
+
+
+
+
   const walletConnector = () => {
     let showWallets;
     wallets ? showWallets = wallets : showWallets = [];
     return <WalletConnector 
-              wallets={showWallets} 
+              wallets={showWallets}
+              address={currentAddress}
               onWalletChange={handleWalletChange} 
               showSeed={handleSeed}
               askPassword={handleAskPassword}
+              askSeed={handleAskSeed}
             />
   }
 
@@ -137,10 +199,17 @@ function App() {
     )
   }
 
+  const askSeedPopup = (err, dupe) => {
+    return (
+      <SeedAskPopup onSubmit={handleSubmitSeed} errorFlag={err} dupeFlag={dupe} />
+    )
+  }
+
+
   // useEffect(() => {
-  //   setWallets(wallets);
-  //   setCurrentWallet(currentWallet);
-  // }, []);
+  //   setWallets
+  // }, [])
+
 
   return (
     <div className="App">
@@ -154,6 +223,7 @@ function App() {
       {showMnemonic ? mnemonicPopup() : null }
       {getPassword ? getPasswordPopup() : null }
       {submitPassword ? askPasswordPopup(submitPasswordErr, submitPasswordProgress) : null }
+      {submitSeed ? askSeedPopup(submitSeedErr, submitSeedDupe) : null }
     </div>
   );
 }

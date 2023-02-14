@@ -1,16 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 const { Wallet } = require("alchemy-sdk");
 
 class WalletConnector extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {
-            wallets: this.props.wallets,
-            currentWallet: null
-        };
+        // this.state = {
+        //     wallets: this.props.wallets,
+        //     currentAddress: this.props.address
+        // };
 
         this.handleChange = this.handleChange.bind(this);
         this.createWalletHandler = this.createWalletHandler.bind(this);
+        this.importWalletHandler = this.importWalletHandler.bind(this);
         this.clearWalletsHandler = this.clearWalletsHandler.bind(this);
     };
 
@@ -30,18 +31,12 @@ class WalletConnector extends React.Component {
             this.props.showSeed(newWallet.mnemonic.phrase, true);
 
             // add the wallet address to the list of wallets we can select from
-            let walletsArr = this.state.wallets;
-            if (this.state.wallets) {
+            let walletsArr = this.props.wallets;
+            if (this.props.wallets) {
                 walletsArr.push(newWallet.address);
             } else {
                 walletsArr = [newWallet.address];
             }
-
-            // set app state to the new wallet
-            await this.setState({
-                wallets: walletsArr,
-                currentWallet: newWallet.address
-            });
 
             // lift the new wallet up to the App
             this.props.onWalletChange(walletsArr, newWallet);
@@ -50,14 +45,12 @@ class WalletConnector extends React.Component {
         }
     }
 
+    importWalletHandler() {
+        this.props.askSeed(true);
+    }
+
     async clearWalletsHandler() {
         await localStorage.clear();
-
-        this.setState({
-            wallets: [],
-            currentWallet: null
-        });
-
         this.props.onWalletChange([], null);
     }
 
@@ -81,7 +74,7 @@ class WalletConnector extends React.Component {
 
     walletDisp() {
         return (
-            <p className='wallet-disp'>Current Wallet: {this.state.currentWallet}</p>
+            <p className='wallet-disp'>Current Wallet: {this.props.address}</p>
         )
     }
 
@@ -99,11 +92,11 @@ class WalletConnector extends React.Component {
                         <label htmlFor="wallet">
                             Select a Wallet
                         </label>
-                        <select name="wallet" className="selector wallet-selector" onChange={this.handleChange} defaultValue={this.state.currentWallet}>
+                        <select name="wallet" className="selector wallet-selector" onChange={this.handleChange} defaultValue={this.props.address}>
                             <option key="" value="">
                                 ...
                             </option>
-                            {this.state.wallets.map((address) =>
+                            {this.props.wallets.map((address) =>
                                 <option key={address} value={address}>
                                     {address}
                                 </option>
@@ -115,12 +108,15 @@ class WalletConnector extends React.Component {
                     <button onClick={this.createWalletHandler} className='cta-button create-wallet-button'>
                     Create New Wallet
                     </button>
+                    <button onClick={this.importWalletHandler} className='cta-button import-wallet-button'>
+                    Import Wallet
+                    </button>
                     <button onClick={this.clearWalletsHandler} className='cta-button clear-wallet-button'>
                     Clear Wallets
                     </button>
                 </div>
                 <div className='wallet-disp-div'>
-                    {this.state.currentWallet ? this.walletDisp() : this.noWalletDisp()}
+                    {this.props.address ? this.walletDisp() : this.noWalletDisp()}
                 </div>
             </div>
         )

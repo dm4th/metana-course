@@ -98,6 +98,10 @@
   border-radius: 3px;
 }
 
+.seed-input {
+  background-color: lightgrey;
+}
+
 .submit-button {
   color: white;
   background-color: #007bff;
@@ -156,7 +160,7 @@
   border-radius: 5px;
 }
 
-.password-error {
+.input-error {
   background-color: lightpink;
   color: darkred;
   padding: 10px;
@@ -226,6 +230,10 @@
 
 .create-wallet-button {
   background: rgb(32, 129, 226);
+}
+
+.import-wallet-button {
+  background: goldenrod;
 }
 
 .clear-wallet-button {

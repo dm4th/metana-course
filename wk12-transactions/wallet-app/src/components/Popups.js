@@ -58,7 +58,7 @@ export const PasswordAskPopup = ({ onSubmit, errorFlag, progress }) => {
 
     const errorBlock = () => {
         return (
-            <p className="password-error">Incorrect Password</p>
+            <p className="input-error">Incorrect Password</p>
         )
     }
 
@@ -90,5 +90,51 @@ export const PasswordAskPopup = ({ onSubmit, errorFlag, progress }) => {
             </div>
         </div>,
     document.getElementById("password-ask-popup")
+    );
+};
+
+export const SeedAskPopup = ({ onSubmit, errorFlag, dupeFlag }) => {
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(e.target[0].value);
+    }
+
+    const errorBlock = () => {
+        return (
+            <p className="input-error">Invalid Seed Phrase</p>
+        )
+    }
+
+    const dupeBlock = () => {
+        return (
+            <p className="input-error">Wallet Already Imported</p>
+        )
+    }
+
+    return ReactDom.createPortal(
+        <div className="popup-container">
+            <div className="popup">
+                <h2>Enter Seed Phrase</h2>
+                <p className="message">Enter the Seed Phrase you were given when you created your wallet</p>
+                <form className="popup-form" onSubmit={handleSubmit}>
+                    <div className="popup-form-group">
+                        <div>
+                            <textarea rows="3" cols="50" className="popup-form-control seed-input" id="seed-capture" />
+                        </div>
+                        <div>
+                            <button className="popup-form-control submit-button" type="submit">
+                            Submit
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                <div className="password-message-div">
+                    {errorFlag ? errorBlock() : null}
+                    {dupeFlag ? dupeBlock() : null}
+                </div>
+            </div>
+        </div>,
+    document.getElementById("seed-ask-popup")
     );
 };
