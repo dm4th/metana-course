@@ -16,14 +16,9 @@ class WalletConnector extends React.Component {
 
     async handleChange(event) {
         event.preventDefault();
-        
-        const walletStruct = JSON.parse(await localStorage.getItem(event.target.value));
 
-        await this.setState({
-            wallets: this.state.wallets,
-            currentWallet: walletStruct
-        })
-        this.props.onWalletChange(this.state.wallets, walletStruct);
+        // show modal asking for password input
+        this.props.askPassword(event.target.value, true);
     }
     
     async createWalletHandler() { 
@@ -31,18 +26,10 @@ class WalletConnector extends React.Component {
             // create new wallet
             const newWallet = Wallet.createRandom({ });
 
+            // show modal for displaying seed phrase
             this.props.showSeed(newWallet.mnemonic.phrase, true);
 
-            // build structure of what data we'll need to hold for the wallet
-            // const walletStruct = {
-            //     address: newWallet.address,
-            //     publicKey: newWallet.publicKey,
-            //     privateKey: newWallet.privateKey,
-            //     transactions: []
-            // };
-
-            // store list of available addresses
-            // let walletsArr = JSON.parse(await localStorage.getItem('walletStorage'));
+            // add the wallet address to the list of wallets we can select from
             let walletsArr = this.state.wallets;
             if (this.state.wallets) {
                 walletsArr.push(newWallet.address);
@@ -50,19 +37,14 @@ class WalletConnector extends React.Component {
                 walletsArr = [newWallet.address];
             }
 
-            // send ETH to new wallet
-            // await this.sendETH(newWallet.address, Utils.parseEther("0.01"));
-
-            // save wallet info to local browser storage
-            // await localStorage.setItem('walletStorage', JSON.stringify(walletsArr));
-            // await localStorage.setItem(newWallet.address, JSON.stringify(walletStruct));
-
             // set app state to the new wallet
             await this.setState({
                 wallets: walletsArr,
                 currentWallet: newWallet.address
             });
-            this.props.onWalletChange(walletsArr, newWallet.address);
+
+            // lift the new wallet up to the App
+            this.props.onWalletChange(walletsArr, newWallet);
         } catch (err) {
             console.log(err);
         }

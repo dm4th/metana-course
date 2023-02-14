@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Network, Alchemy } from 'alchemy-sdk';
+import { Network, Alchemy, Wallet } from 'alchemy-sdk';
 
 import './App.css';
 import WalletConnector from './components/WalletConnector';
 import NetworkSelector from './components/NetworkSelector';
-import { MnemonicPopup, PasswordCapturePopup } from './components/Popups';
+import { 
+  MnemonicPopup, 
+  PasswordCapturePopup, 
+  PasswordAskPopup 
+} from './components/Popups';
 
 // const ethers = require("@nomiclabs/hardhat-ethers");
 
@@ -45,16 +49,23 @@ function App() {
 
   // connect to wallet & handle change and creation of new wallets
   const [wallets, setWallets] = useState(JSON.parse(localStorage.getItem('walletStorage')));
-  const [currentAddress, setCurrentAddress] = useState(null);
+  const [currentWallet, setCurrentWallet] = useState(null);
   // state to disply mnemonic phrase for the user
   const [showMnemonic, setShowMnemonic] = useState(false);
   const [seedPhrase, setSeedPhrase] = useState('');
   // state to allow the app to store a password for easier wallet retrieval
   const [getPassword, setGetPassword] = useState(false);
+  // state to ask for password for an alreaady created wallet
+  const [submitPassword, setSubmitPassword] = useState(false);
+  const [potentialAddress, setPotentialAddress] = useState('');
+  const [submitPasswordErr, setSubmitPasswordErr] = useState(false);
+  const [submitPasswordProgress, setSubmitPasswordProgress] = useState(null);
 
-  const handleWalletChange = (wallets, address) => { 
+  const handleWalletChange = async (wallets, newWallet) => { 
     setWallets(wallets);
-    setCurrentAddress(address);
+    setCurrentWallet(newWallet);
+
+    await localStorage.setItem('walletStorage', JSON.stringify(wallets));
   }
 
   const handleSeed = (phrase, show) => { 
@@ -64,15 +75,37 @@ function App() {
     if (!show) setGetPassword(true);
   }
 
-  const storePassword = (password) => {
-    return password;
-  }
-
-  const handleGetPassword = (password) => {
+  const handleGetPassword = async (password) => {
     setGetPassword(false);
 
-    console.log(password);
-    console.log(currentAddress);
+    // encrypt the wallet with the password and save to browser storage
+    const encryptedJSON = await currentWallet.encrypt(password);
+    await localStorage.setItem(currentWallet.address, JSON.stringify(encryptedJSON));
+  }
+
+  const handleAskPassword = (walletAddress, show) => { 
+    setSubmitPassword(show);
+    setPotentialAddress(walletAddress);
+  }
+
+  const handleSubmitPassword = async (password) => {
+    // check for the correct password
+    setSubmitPasswordErr(false);
+    const encryptedJson = await JSON.parse(localStorage.getItem(potentialAddress)); 
+    let newWallet;
+    try {
+      newWallet = await Wallet.fromEncryptedJson(encryptedJson, password, setSubmitPasswordProgress);
+
+      setCurrentWallet(newWallet);
+      setPotentialAddress('');
+      setSubmitPassword(false);
+      setSubmitPasswordErr(false);
+      setSubmitPasswordProgress(null);
+    } catch (err) {
+      console.log(err);
+      setSubmitPasswordErr(true);
+      setSubmitPasswordProgress(null);
+    }
   }
 
   const walletConnector = () => {
@@ -82,6 +115,7 @@ function App() {
               wallets={showWallets} 
               onWalletChange={handleWalletChange} 
               showSeed={handleSeed}
+              askPassword={handleAskPassword}
             />
   }
 
@@ -94,6 +128,12 @@ function App() {
   const getPasswordPopup = () => {
     return (
       <PasswordCapturePopup onSubmit={handleGetPassword} />
+    )
+  }
+
+  const askPasswordPopup = (err, prog) => {
+    return (
+      <PasswordAskPopup onSubmit={handleSubmitPassword} errorFlag={err} progress={prog} />
     )
   }
 
@@ -113,6 +153,7 @@ function App() {
       </div>
       {showMnemonic ? mnemonicPopup() : null }
       {getPassword ? getPasswordPopup() : null }
+      {submitPassword ? askPasswordPopup(submitPasswordErr, submitPasswordProgress) : null }
     </div>
   );
 }

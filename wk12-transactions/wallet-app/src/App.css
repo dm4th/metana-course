@@ -140,6 +140,29 @@
   border-radius: 5px;
 }
 
+.password-message-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  text-align: center;
+  padding: 5px;
+}
+
+.password-progress {
+  background-color: lightgreen;
+  color: darkgreen;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.password-error {
+  background-color: lightpink;
+  color: darkred;
+  padding: 10px;
+  border-radius: 5px;
+}
+
 .balance {
   text-align: center;
   align-items: center;

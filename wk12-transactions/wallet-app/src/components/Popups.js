@@ -16,6 +16,8 @@ export const MnemonicPopup = ({ phrase, showSeed }) => {
     );
 };
 
+
+
 export const PasswordCapturePopup = ({ onSubmit }) => {
 
     const handleSubmit = (e) => {
@@ -42,5 +44,51 @@ export const PasswordCapturePopup = ({ onSubmit }) => {
             </div>
         </div>,
     document.getElementById("password-capture-popup")
+    );
+};
+
+
+
+export const PasswordAskPopup = ({ onSubmit, errorFlag, progress }) => {
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(e.target[0].value);
+    }
+
+    const errorBlock = () => {
+        return (
+            <p className="password-error">Incorrect Password</p>
+        )
+    }
+
+    const progressBlock = () => {
+        return (
+            <p className="password-progress">Decrypting -- {Math.round(progress*100)}%</p>
+        )
+    }
+
+    return ReactDom.createPortal(
+        <div className="popup-container">
+            <div className="popup">
+                <h2>Enter Password</h2>
+                <form className="popup-form" onSubmit={handleSubmit}>
+                    <div className="popup-form-group">
+                        <label htmlFor="password" className="popup-form-control">Password:</label>
+                        <br></br>
+                        <input type="password" className="popup-form-control" id="password-capture" placeholder="Password" />
+                        <br></br>
+                        <button className="popup-form-control submit-button" type="submit">
+                        Submit
+                        </button>
+                    </div>
+                </form>
+                <div className="password-message-div">
+                    {errorFlag ? errorBlock() : null}
+                    {progress ? progressBlock() : null}
+                </div>
+            </div>
+        </div>,
+    document.getElementById("password-ask-popup")
     );
 };
