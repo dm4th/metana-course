@@ -203,7 +203,6 @@ function App() {
       setBalance(
         Number(Utils.formatEther(addrBalance)).toLocaleString('en', number_options)
       );
-      console.log(alchemy);
     }
   }
 
@@ -294,18 +293,10 @@ function App() {
   return (
     <div className="App">
       <h1 className="title-text">Wallet DApp</h1>
-      <div>
-        <NetworkSelector onNetworkChange={handleNetworkChange} />
-      </div>
-      <div>
-        {walletConnector()}
-      </div>
-      <div>
-        <BalanceTable network={alchemy} balance={balance} />
-      </div>
-      <div>
-        <TokenTable balances={tokenBalances} />
-      </div>
+      <NetworkSelector onNetworkChange={handleNetworkChange} />
+      {walletConnector()}
+      {currentAddress ? <BalanceTable network={alchemy} balance={balance} /> : null}
+      {currentAddress ? <TokenTable balances={tokenBalances} /> : null}
       {showMnemonic ? mnemonicPopup() : null }
       {getPassword ? getPasswordPopup() : null }
       {submitPassword ? askPasswordPopup(submitPasswordErr, submitPasswordProgress) : null }

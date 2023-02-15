@@ -1,5 +1,12 @@
 .App {
   margin: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: space-between;
+  border: none;
+
 }
 
 .title-text {
@@ -184,15 +191,6 @@
   border-radius: 5px;
 }
 
-.balance {
-  text-align: center;
-  align-items: center;
-  padding: 5px;
-  margin: 5px;
-  border: none;
-  border-radius: 12px;
-}
-
 .cta-button {
   padding: 10px;
   margin: 5px;
@@ -223,7 +221,7 @@
   padding: 5px;
   margin: 5px;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .wallet-selector {
@@ -231,7 +229,7 @@
   padding: 5px;
   margin: 5px;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
 }
 
 .cta-button {
@@ -239,9 +237,9 @@
   margin: 5px;
   border: none;
   border-radius: 12px;
-  min-width: 250px;
   color: white;
   font-size: 18px;
+  font-weight: bold;
   cursor: pointer;
 }
 
@@ -261,8 +259,57 @@
   background: darkred;
 }
 
-table {
+.balance-div{
+  width: 100%;
+}
+
+.balance-ops {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  text-align: center;
+  width: 100%;
+}
+
+.balance-small {
+  width: 25%;
+  padding: 10px;
+}
+
+.balance-big {
+  width: 50%;
+  padding: 10px;
+}
+
+.transfer-form-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  vertical-align: top;
+  text-align: center;
+  flex-direction: row;
+}
+
+.transfer-form-control {
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+}
+
+.transfer-input {
+  position: relative;
+  background-color: #f0f0f0;
   width: 90%;
+}
+
+.transfer-button {
+  background-color: #007bff;
+}
+
+table {
+  width: 100%;
 }
 
 thead {
