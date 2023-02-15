@@ -7,26 +7,29 @@ class TokenTable extends React.Component {
 
     render () {
         return (
-            <table>
-                <thead>
-                    <tr>
-                        <td>Image</td>
-                        <td>Symbol</td>
-                        <td>Name</td>
-                        <td>Balance</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {this.props.balances.map((token) => 
+            <div className='token-div'>
+                <h2>ERC20 Tokens</h2>
+                <table className='token-table'>
+                    <thead>
                         <tr>
-                            <td><img src={token.logo} /></td>
-                            <td>{token.symbol}</td>
-                            <td>{token.name}</td>
-                            <td>{token.balance}</td>
+                            <th>Logo</th>
+                            <th>Symbol</th>
+                            <th>Name</th>
+                            <th>Balance</th>
                         </tr>
-                    )}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {this.props.balances.map((token) => 
+                            <tr>
+                                <td><img src={token.logo}  className='token-logo' /></td>
+                                <td>{token.symbol}</td>
+                                <td>{token.name}</td>
+                                <td>{token.balance}</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         )
     }
 }

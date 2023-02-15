@@ -4,6 +4,7 @@ import { Network, Alchemy, Wallet, Utils } from 'alchemy-sdk';
 import './App.css';
 import NetworkSelector from './components/NetworkSelector';
 import WalletConnector from './components/WalletConnector';
+import BalanceTable from './components/BalanceTable';
 import TokenTable from './components/TokenTable';
 import { 
   MnemonicPopup, 
@@ -30,6 +31,12 @@ const alchemySettings = {
   },
 };
 
+// String formatting options
+const number_options = { 
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2 
+};
+
 function App() {
 
   // connect to RPC provider and heandle network changes
@@ -51,12 +58,6 @@ function App() {
       default:
         break;
     }
-  }
-
-  const networkSelector = () => {
-    return (
-      <NetworkSelector onNetworkChange={handleNetworkChange} />
-    )
   }
 
 
@@ -193,6 +194,19 @@ function App() {
 
   // display wallet information
 
+  // state to hold ETH/MATIC balance 
+  const [balance, setBalance] = useState('');
+
+  const retrieveAddressBalance = async () => {
+    if (currentAddress) {
+      const addrBalance = await alchemy.core.getBalance(currentAddress, 'latest');
+      setBalance(
+        Number(Utils.formatEther(addrBalance)).toLocaleString('en', number_options)
+      );
+      console.log(alchemy);
+    }
+  }
+
   // state to hold token info
   const [tokenBalances, setTokenBalances] = useState([]);
 
@@ -219,10 +233,6 @@ function App() {
 
   const retrieveTokenMetadata = async (contractAddress, hexBalance) => {
     const metaData = await alchemy.core.getTokenMetadata(contractAddress);
-    const number_options = { 
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2 
-    };
     const decBalance = Number(Utils.formatUnits(hexBalance, metaData.decimals)).toLocaleString('en', number_options);
     return {
       symbol: metaData.symbol,
@@ -245,12 +255,6 @@ function App() {
               askPassword={handleAskPassword}
               askSeed={handleAskSeed}
             />
-  }
-
-  const tokenTable = () => {
-    return (
-      <TokenTable balances={tokenBalances} />
-    )
   }
 
   const mnemonicPopup = () => {
@@ -279,6 +283,7 @@ function App() {
 
 
   useEffect(() => {
+    retrieveAddressBalance();
     retrieveTokenBalances();
   }, [
     alchemy,
@@ -290,13 +295,16 @@ function App() {
     <div className="App">
       <h1 className="title-text">Wallet DApp</h1>
       <div>
-        {networkSelector()}
+        <NetworkSelector onNetworkChange={handleNetworkChange} />
       </div>
       <div>
         {walletConnector()}
       </div>
       <div>
-        {tokenTable()}
+        <BalanceTable network={alchemy} balance={balance} />
+      </div>
+      <div>
+        <TokenTable balances={tokenBalances} />
       </div>
       {showMnemonic ? mnemonicPopup() : null }
       {getPassword ? getPasswordPopup() : null }

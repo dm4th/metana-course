@@ -261,6 +261,33 @@
   background: darkred;
 }
 
+table {
+  width: 90%;
+}
+
+thead {
+  background-color: slategray;
+  color: white;
+}
+
+tr {
+  height: 50px;
+}
+
+tr:nth-child(even) {background-color: #f2f2f2}
+
+th, td {
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.token-logo {
+  height: 50px;
+  width: auto;
+}
+
 @keyframes animate {
   from {
     transform: scale(0.5);
