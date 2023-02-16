@@ -6,8 +6,10 @@ import NetworkSelector from './components/NetworkSelector';
 import WalletConnector from './components/WalletConnector';
 import BalanceTable from './components/BalanceTable';
 import TokenTable from './components/TokenTable';
+import TransactionTable from './components/TransactionTable';
 import { 
   MnemonicPopup, 
+  ClearWalletsPopup,
   PasswordCapturePopup, 
   PasswordAskPopup,
   SeedAskPopup
@@ -58,6 +60,9 @@ function App() {
       default:
         break;
     }
+
+    setTokenBalances([]);
+    setTransactionHistory({sent: [], received: []})
   }
 
 
@@ -80,6 +85,26 @@ function App() {
     }
 
     await localStorage.setItem('walletStorage', JSON.stringify(wallets));
+  }
+
+
+  // state to handle the current wallet and list of available wallets
+  const [showClear, setShowClear] = useState(false);
+  
+  const handleShowClearWallets = (show) => {
+    setShowClear(show);
+  }
+
+  const handleClearWallets = async (val) => {
+    if (val) {
+      for (let w=0; w<wallets.length; w++) {
+        await localStorage.removeItem(wallets[w]);
+      }
+      await localStorage.removeItem('walletStorage');
+      handleWalletChange([], null);
+    }
+
+    setShowClear(false);
   }
 
 
@@ -196,6 +221,10 @@ function App() {
 
   // state to hold ETH/MATIC balance 
   const [balance, setBalance] = useState('');
+  // state to ask for transfer details
+  const [transferAddress, setTransferAddress] = useState('');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [showTransfer, setShowTransfer] = useState(false);
 
   const retrieveAddressBalance = async () => {
     if (currentAddress) {
@@ -204,6 +233,14 @@ function App() {
         Number(Utils.formatEther(addrBalance)).toLocaleString('en', number_options)
       );
     }
+  }
+
+  const handleTransferEth = async (address, amount) => {
+    await setTransferAddress(address);
+    await setTransferAmount(amount);
+    await setShowTransfer(true);
+    console.log(transferAddress);
+    console.log(transferAmount);
   }
 
   // state to hold token info
@@ -241,6 +278,99 @@ function App() {
     }
   }
 
+  // state to hold historical transaction info
+  const [transactionHistory, setTransactionHistory] = useState({sent: [], received: []});
+
+  const retrieveTransactionHistory = async () => {
+    if (currentAddress) {
+
+      let history = {
+        sent: [],
+        received: []
+      };
+
+      let tokenLogoTemp = {};
+
+      try {
+        const sentData = await alchemy.core.getAssetTransfers({
+          fromAddress: currentAddress,
+          category: ["external", "internal", "erc20", "erc721", "erc1155", "specialnft"],
+          order: 'desc'
+        });
+
+        for (let t = 0; t < sentData.transfers.length; t++) {
+          const asset = sentData.transfers[t].asset;
+          const assetAddress = sentData.transfers[t].to;
+          if (!(asset in tokenLogoTemp) && asset !== 'ETH' && asset !== 'MATIC') {
+            try {
+              const metaData = await alchemy.core.getTokenMetadata(assetAddress);
+              tokenLogoTemp.asset = metaData.logo;
+            } catch (error) {
+              tokenLogoTemp.asset = null;
+            }
+          } 
+          let value = sentData.transfers[t].value;
+          value ??= 0;
+          history.sent.push({
+            category: sentData.transfers[t].category,
+            asset: asset,
+            logo: (asset === 'ETH' || asset === 'MATIC') ? asset : tokenLogoTemp.asset,
+            value: value.toLocaleString('en', number_options),
+            txHash: sentData.transfers[t].uniqueId.split(':')[0]
+          })
+        }
+
+        const receivedData = await alchemy.core.getAssetTransfers({
+          toAddress: currentAddress,
+          category: ["external", "internal", "erc20", "erc721", "erc1155", "specialnft"],
+          order: 'desc'
+        });
+
+        for (let t = 0; t < receivedData.transfers.length; t++) {
+          const asset = receivedData.transfers[t].asset;
+          const assetAddress = receivedData.transfers[t].from;
+          if (!(asset in tokenLogoTemp) && asset !== 'ETH' && asset !== 'MATIC') {
+            try {
+              const metaData = await alchemy.core.getTokenMetadata(assetAddress);
+              tokenLogoTemp.asset = metaData.logo;
+            } catch (error) {
+              tokenLogoTemp.asset = null;
+            }
+          } 
+          let value = receivedData.transfers[t].value;
+          value ??= 0;
+          history.received.push({
+            category: receivedData.transfers[t].category,
+            asset: asset,
+            logo: (asset === 'ETH' || asset === 'MATIC') ? asset : tokenLogoTemp.asset,
+            value: value.toLocaleString('en', number_options),
+            txHash: receivedData.transfers[t].uniqueId.split(':')[0]
+          })
+        }
+
+        setTransactionHistory(history);
+      } catch (err) {
+        console.log(history);
+        console.log(err);
+      }
+    } else {
+      setTransactionHistory({sent: [], received: []});
+    }
+  }
+
+  const getTxLink = () => {
+    switch (alchemy.config.network) {
+      case 'eth-mainnet':
+        return 'https://etherscan.io/tx/';
+      case 'polygon-mainnet':
+        return 'https://polygonscan.com/tx/';
+      default:
+        return 'https://goerli.etherscan.io/tx/';
+    }
+  }
+
+
+
 
 
   const walletConnector = () => {
@@ -251,6 +381,7 @@ function App() {
               address={currentAddress}
               onWalletChange={handleWalletChange} 
               showSeed={handleSeed}
+              showClear={handleShowClearWallets}
               askPassword={handleAskPassword}
               askSeed={handleAskSeed}
             />
@@ -284,9 +415,10 @@ function App() {
   useEffect(() => {
     retrieveAddressBalance();
     retrieveTokenBalances();
+    retrieveTransactionHistory();
   }, [
-    alchemy,
-    currentAddress
+    currentAddress,
+    alchemy
   ])
 
 
@@ -295,10 +427,12 @@ function App() {
       <h1 className="title-text">Wallet DApp</h1>
       <NetworkSelector onNetworkChange={handleNetworkChange} />
       {walletConnector()}
-      {currentAddress ? <BalanceTable network={alchemy} balance={balance} /> : null}
+      {currentAddress ? <BalanceTable network={alchemy} balance={balance} submitTransfer={handleTransferEth}/> : null}
       {currentAddress ? <TokenTable balances={tokenBalances} /> : null}
-      {showMnemonic ? mnemonicPopup() : null }
-      {getPassword ? getPasswordPopup() : null }
+      {currentAddress ? <TransactionTable transactions={transactionHistory} txLink={getTxLink()} /> : null}
+      {showMnemonic ? <MnemonicPopup phrase={seedPhrase} showSeed={handleSeed} /> : null }
+      {getPassword ? <PasswordCapturePopup onSubmit={handleGetPassword} /> : null }
+      {showClear ? <ClearWalletsPopup clearHandler={handleClearWallets} /> : null }
       {submitPassword ? askPasswordPopup(submitPasswordErr, submitPasswordProgress) : null }
       {submitSeed ? askSeedPopup(submitSeedErr, submitSeedDupe) : null }
     </div>

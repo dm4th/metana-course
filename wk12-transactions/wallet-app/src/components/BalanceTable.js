@@ -3,15 +3,35 @@ import React from 'react';
 class BalanceTable extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            address: '',
+            amount: ''
+        };
+
+        // this.handleChangeAddress = this.handleChangeAddress.bind(this);
+        // this.handleChangeAmount = this.handleChangeAmount.bind(this);
+        this.handleChange = this.handleChange.bind(this);
         this.handleTransfer = this.handleTransfer.bind(this);
     };
 
-    handleTransfer(e) {
-        console.log(e)
+    handleChange(event) {
+        event.preventDefault();
+        this.setState({
+            [event.target.name]: event.target.value
+        });
+    }
+
+    async handleTransfer(event) {
+        event.preventDefault();
+        await this.props.submitTransfer(this.state.address, this.state.amount);
+        this.setState({
+            address: '',
+            amount: ''
+        });
     }
 
     logoURL() {
-        if (this.props.network.config.network == 'polygon-mainnet') {
+        if (this.props.network.config.network === 'polygon-mainnet') {
             return 'https://cryptologos.cc/logos/polygon-matic-logo.png?v=024'
         } else {
             return 'https://cryptologos.cc/logos/ethereum-eth-logo.png?v=024'
@@ -19,7 +39,7 @@ class BalanceTable extends React.Component {
     }
 
     tokenName() {
-        if (this.props.network.config.network == 'polygon-mainnet') {
+        if (this.props.network.config.network === 'polygon-mainnet') {
             return 'MATIC'
         } else {
             return 'ETH'
@@ -39,13 +59,29 @@ class BalanceTable extends React.Component {
                             <div className="transfer-form-group">
                                 <label htmlFor="address" className="transfer-form-control">Address:</label>
                                 <br></br>
-                                <input type="text" className="transfer-form-control transfer-input" id="address-capture" placeholder="0x...." />
+                                <input 
+                                    type="text" 
+                                    name="address"
+                                    value={this.state.address} 
+                                    onChange={this.handleChange} 
+                                    className="transfer-form-control transfer-input" 
+                                    id="address-capture" 
+                                    placeholder="0x...." 
+                                />
                                 <br></br>
                             </div>
                             <div className="transfer-form-group">
                                 <label htmlFor="amount" className="transfer-form-control">Amount:</label>
                                 <br></br>
-                                <input type="number" className="transfer-form-control transfer-input" id="amount-capture" step="0.00001" placeholder="" />
+                                <input 
+                                    type="text" 
+                                    name="amount"
+                                    value={this.state.amount} 
+                                    onChange={this.handleChange} 
+                                    className="transfer-form-control transfer-input" 
+                                    id="amount-capture" 
+                                    placeholder={this.tokenName()}
+                                />
                                 <br></br>
                             </div>
                             <div className="transfer-form-group">

@@ -74,6 +74,19 @@
   font-style: italic;
 }
 
+.popup .warning {
+  display: flex;
+  align-items: center;
+  vertical-align: auto;
+  text-align: center;
+  width: 33%;
+  flex-wrap: wrap;
+  padding: 5px;
+  border: none;
+  font-weight: bold;
+  color: #c70000;
+}
+
 .popup .seed-phrase {
   background: lightgrey;
   display: flex;
@@ -302,6 +315,46 @@
   position: relative;
   background-color: #f0f0f0;
   width: 90%;
+}
+
+.transaction-header {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.transaction-form-group {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  vertical-align: top;
+  text-align: center;
+  flex-direction: row;
+}
+
+.transaction-form-div {
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  width: 50%;
+}
+
+.transaction-form-control {
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+}
+
+.transaction-label {
+  position: relative;
+  width: 70%;
+}
+
+.transaction-input {
+  position: relative;
+  background-color: #f0f0f0;
+  text-align: center;
+  width: 20%;
 }
 
 .transfer-button {

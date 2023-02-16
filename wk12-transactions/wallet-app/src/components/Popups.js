@@ -17,6 +17,29 @@ export const MnemonicPopup = ({ phrase, showSeed }) => {
 };
 
 
+export const ClearWalletsPopup = ({ clearHandler }) => {
+    return ReactDom.createPortal(
+        <div className="popup-container">
+            <div className="popup">
+                <h2>Clear Wallets Memory</h2>
+                <p className="message">Continuing will wipe local memory of stored walelts & associated passwords</p>
+                <p className="message warning">THIS CANNOT BE UNDONE</p>
+                <p className="message">You will be ale to recover your wallet using your seed phrase later</p>
+                <div className="popup-button-grouping">
+                    <button className="cta-button submit-button" onClick={() => clearHandler(true)}>
+                    Continue
+                    </button>
+                    <button className="cta-button cancel-button" onClick={() => clearHandler(false)}>
+                    Cancel
+                    </button>
+                </div>
+            </div>
+        </div>,
+    document.getElementById("seed-phrase-popup")
+    );
+};
+
+
 
 export const PasswordCapturePopup = ({ onSubmit }) => {
 

@@ -4,10 +4,6 @@ const { Wallet } = require("alchemy-sdk");
 class WalletConnector extends React.Component {
     constructor(props) {
         super(props);
-        // this.state = {
-        //     wallets: this.props.wallets,
-        //     currentAddress: this.props.address
-        // };
 
         this.handleChange = this.handleChange.bind(this);
         this.createWalletHandler = this.createWalletHandler.bind(this);
@@ -49,12 +45,8 @@ class WalletConnector extends React.Component {
         this.props.askSeed(true);
     }
 
-    async clearWalletsHandler() {
-        for (let w=0; w<this.props.wallets.length; w++) {
-            await localStorage.removeItem(this.props.wallets[w]);
-        }
-        await localStorage.removeItem('walletStorage');
-        this.props.onWalletChange([], null);
+    clearWalletsHandler() {
+        this.props.showClear(true);
     }
 
     // async sendETH(addr, amt) {

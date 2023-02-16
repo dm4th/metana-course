@@ -1,14 +1,10 @@
 import React from 'react';
 
 class TokenTable extends React.Component {
-    constructor(props) {
-        super(props);
-    };
-
     render () {
         return (
             <div className='token-div'>
-                <h2>ERC20 Tokens</h2>
+                <h2>ERC20 Token Balances</h2>
                 <table className='token-table'>
                     <thead>
                         <tr>
@@ -20,8 +16,8 @@ class TokenTable extends React.Component {
                     </thead>
                     <tbody>
                         {this.props.balances.map((token) => 
-                            <tr>
-                                <td><img src={token.logo}  className='token-logo' /></td>
+                            <tr key={token.symbol}>
+                                <td><img src={token.logo} alt='' className='token-logo' /></td>
                                 <td>{token.symbol}</td>
                                 <td>{token.name}</td>
                                 <td>{token.balance}</td>
