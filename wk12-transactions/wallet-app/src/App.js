@@ -235,12 +235,28 @@ function App() {
     }
   }
 
-  const handleTransferEth = async (address, amount) => {
-    await setTransferAddress(address);
-    await setTransferAmount(amount);
+  const handleTransferEth = async (toAddress, toAmount) => {
+    const nonce = await alchemy.core.getTransactionCount(
+      currentAddress,
+      'latest'
+    );
+
+    console.log(alchemy)
+
+    const rawTxData = {
+      to: toAddress,
+      value: Utils.parseEther(toAmount),
+      gasLimit: "21000",
+      maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
+      maxFeePerGas: Utils.parseUnits("20", "gwei"),
+      nonce: nonce,
+      type: 2,
+      chainId: alchemy.network.chainId,
+    }
+
+    await setTransferAddress(toAddress);
+    await setTransferAmount(toAmount);
     await setShowTransfer(true);
-    console.log(transferAddress);
-    console.log(transferAmount);
   }
 
   // state to hold token info
