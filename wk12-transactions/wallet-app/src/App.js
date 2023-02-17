@@ -12,7 +12,8 @@ import {
   ClearWalletsPopup,
   PasswordCapturePopup, 
   PasswordAskPopup,
-  SeedAskPopup
+  SeedAskPopup,
+  TransactionSignPopup
 } from './components/Popups';
 
 // const ethers = require("@nomiclabs/hardhat-ethers");
@@ -222,8 +223,7 @@ function App() {
   // state to hold ETH/MATIC balance 
   const [balance, setBalance] = useState('');
   // state to ask for transfer details
-  const [transferAddress, setTransferAddress] = useState('');
-  const [transferAmount, setTransferAmount] = useState('');
+  const [transferData, setTransferData] = useState({});
   const [showTransfer, setShowTransfer] = useState(false);
 
   const retrieveAddressBalance = async () => {
@@ -241,22 +241,40 @@ function App() {
       'latest'
     );
 
-    console.log(alchemy)
+    const chainId = await (await alchemy.core.getNetwork()).chainId;
+
+    const feeData = await alchemy.core.getFeeData();
+    const gasLimit = await alchemy.core.estimateGas({
+      to: toAddress,
+      value: Utils.parseEther(toAmount),
+      // gasPrice: feeData.gasPrice.toString()
+    });
 
     const rawTxData = {
       to: toAddress,
-      value: Utils.parseEther(toAmount),
-      gasLimit: "21000",
-      maxPriorityFeePerGas: Utils.parseUnits("5", "gwei"),
-      maxFeePerGas: Utils.parseUnits("20", "gwei"),
+      value: Utils.parseEther(toAmount).toString(),
+      gasLimit: gasLimit.toString(),
+      maxPriorityFeePerGas: feeData.maxPriorityFeePerGas.toString(),
+      maxFeePerGas: feeData.maxFeePerGas.toString(),
       nonce: nonce,
       type: 2,
-      chainId: alchemy.network.chainId,
+      chainId: chainId
     }
 
-    await setTransferAddress(toAddress);
-    await setTransferAmount(toAmount);
+    await setTransferData(rawTxData);
     await setShowTransfer(true);
+  }
+
+  const sendTx = async (rawTxData, sign) => {
+    await setShowTransfer(false);
+    if (sign) {
+      const signedTx = await currentWallet.signTransaction(rawTxData);
+      const tx = await alchemy.transact.sendTransaction(signedTx);
+      console.log(tx);
+      tx.wait();
+      console.log(tx);
+    }
+    await setTransferData({});
   }
 
   // state to hold token info
@@ -403,18 +421,6 @@ function App() {
             />
   }
 
-  const mnemonicPopup = () => {
-    return (
-      <MnemonicPopup phrase={seedPhrase} showSeed={handleSeed} />
-    )
-  }
-
-  const getPasswordPopup = () => {
-    return (
-      <PasswordCapturePopup onSubmit={handleGetPassword} />
-    )
-  }
-
   const askPasswordPopup = (err, prog) => {
     return (
       <PasswordAskPopup onSubmit={handleSubmitPassword} errorFlag={err} progress={prog} />
@@ -451,6 +457,7 @@ function App() {
       {showClear ? <ClearWalletsPopup clearHandler={handleClearWallets} /> : null }
       {submitPassword ? askPasswordPopup(submitPasswordErr, submitPasswordProgress) : null }
       {submitSeed ? askSeedPopup(submitSeedErr, submitSeedDupe) : null }
+      {showTransfer ? <TransactionSignPopup onSubmit={sendTx} txData={transferData} /> : null }
     </div>
   );
 }

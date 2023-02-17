@@ -59,6 +59,8 @@
   justify-content: space-between;
   border-radius: 5px;
   position: relative;
+  max-width: 95%;
+  max-height: 90%;
   animation: animate 0.5s;
 }
 
@@ -67,7 +69,7 @@
   align-items: center;
   vertical-align: auto;
   text-align: center;
-  width: 66%;
+  max-width: 66%;
   flex-wrap: wrap;
   padding: 5px;
   border: none;
@@ -79,7 +81,7 @@
   align-items: center;
   vertical-align: auto;
   text-align: center;
-  width: 33%;
+  max-width: 33%;
   flex-wrap: wrap;
   padding: 5px;
   border: none;
@@ -100,26 +102,30 @@
   border-radius: 8px;
 }
 
+.popup-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .popup-form-group {
   display: flex;
   flex-direction: row;
   align-items: center;
   text-align: center;
-  width: 66%;
-  padding: 10px;
   justify-content: space-between;
   border: none;
 }
 
 .popup-button-grouping {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   text-align: center;
-  width: 66%;
-  padding: 10px;
+  max-width: 50%;
   justify-content: space-between;
   border: none;
+  align-content: center;
 }
 
 .popup-form-control {
@@ -359,6 +365,41 @@
 
 .transfer-button {
   background-color: #007bff;
+}
+
+.tx-div {
+  background: lightgrey;
+  display: flex;
+  align-items: center;
+  vertical-align: auto;
+  width: 50%;
+  flex-wrap: wrap;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+}
+
+.tx-row {
+  display: flex;
+  align-items: flex-start;
+  vertical-align: auto;
+  text-align: left;
+  width: 90%;
+  flex-direction: row;
+  flex-wrap: wrap;
+  font-size: small;
+}
+
+.tx-item {
+  padding-left: 10px;
+}
+
+.tx-key {
+  color: purple;
+}
+
+.tx-val {
+  color: green;
 }
 
 table {
