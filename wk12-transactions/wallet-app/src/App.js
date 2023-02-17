@@ -224,6 +224,8 @@ function App() {
   const [balance, setBalance] = useState('');
   // state to ask for transfer details
   const [transferData, setTransferData] = useState({});
+  const [currentTx, setCurrentTx] = useState(null);
+  const [currentTxStatus, setCurrentTxStatus] = useState('none');
   const [showTransfer, setShowTransfer] = useState(false);
 
   const retrieveAddressBalance = async () => {
@@ -265,14 +267,23 @@ function App() {
     await setShowTransfer(true);
   }
 
-  const sendTx = async (rawTxData, sign) => {
+  const delay = ms => new Promise(res => setTimeout(res, ms));
+
+  const sendTx = async (sign) => {
     await setShowTransfer(false);
     if (sign) {
-      const signedTx = await currentWallet.signTransaction(rawTxData);
+      const signedTx = await currentWallet.signTransaction(transferData);
       const tx = await alchemy.transact.sendTransaction(signedTx);
-      console.log(tx);
-      tx.wait();
-      console.log(tx);
+      await setCurrentTx(tx.hash);
+      await setCurrentTxStatus('Transaction Processing');
+
+      await tx.wait();
+
+      await setCurrentTxStatus('Transaction Complete');
+      await delay(5000);
+
+      await setCurrentTx(null);
+      await setCurrentTxStatus('none');
     }
     await setTransferData({});
   }
@@ -403,6 +414,14 @@ function App() {
     }
   }
 
+  const currentTxLink = () => {
+    return currentTx ? 
+      {
+        link: getTxLink() + currentTx,
+        status: currentTxStatus
+       } : null
+  }
+
 
 
 
@@ -440,7 +459,8 @@ function App() {
     retrieveTransactionHistory();
   }, [
     currentAddress,
-    alchemy
+    alchemy,
+    currentTxStatus
   ])
 
 
@@ -449,7 +469,7 @@ function App() {
       <h1 className="title-text">Wallet DApp</h1>
       <NetworkSelector onNetworkChange={handleNetworkChange} />
       {walletConnector()}
-      {currentAddress ? <BalanceTable network={alchemy} balance={balance} submitTransfer={handleTransferEth}/> : null}
+      {currentAddress ? <BalanceTable network={alchemy} balance={balance} currentTx={currentTxLink()} submitTransfer={handleTransferEth}/> : null}
       {currentAddress ? <TokenTable balances={tokenBalances} /> : null}
       {currentAddress ? <TransactionTable transactions={transactionHistory} txLink={getTxLink()} /> : null}
       {showMnemonic ? <MnemonicPopup phrase={seedPhrase} showSeed={handleSeed} /> : null }

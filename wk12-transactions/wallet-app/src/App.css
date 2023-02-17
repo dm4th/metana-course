@@ -187,6 +187,37 @@
   border-radius: 5px;
 }
 
+.current-tx-div {
+  align-items: center;
+  vertical-align: top;
+  text-align: center;
+  max-width: 50%;
+  margin: auto;
+  animation: animate 0.3s;
+}
+
+.current-tx-disp {
+  display: flex;
+  justify-content: center;
+  padding: auto;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.current-tx-disp a {
+  padding-left: 5px;
+}
+
+.current-tx-processing {
+  background-color: lightgoldenrodyellow;
+  color: darkgoldenrod;
+}
+
+.current-tx-complete {
+  background-color: lightgreen;
+  color: darkgreen;
+}
+
 .password-message-div {
   display: flex;
   justify-content: center;

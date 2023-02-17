@@ -46,6 +46,32 @@ class BalanceTable extends React.Component {
         }
     }
 
+    currentTxDisp() {
+        if (this.props.currentTx) {
+            if (this.props.currentTx.status === 'Transaction Processing') {
+                return (
+                    <div className='current-tx-div'>
+                        <p className='current-tx-disp current-tx-processing'>
+                            {this.props.currentTx.status}:  
+                            <a href={this.props.currentTx.link} target="_blank">Explorer</a>
+                        </p>
+                    </div>
+                )
+            } else {
+                return (
+                    <div className='current-tx-div'>
+                        <p className='current-tx-disp current-tx-complete'>
+                            {this.props.currentTx.status}:  
+                            <a href={this.props.currentTx.link} target="_blank">Explorer</a>
+                        </p>
+                    </div>
+                )
+            }
+        } else {
+            return null
+        }
+    }
+
     render () {
         return (
             <div className='balance-div'>
@@ -95,6 +121,7 @@ class BalanceTable extends React.Component {
                         <img src={this.logoURL()} alt='' className='token-logo' />
                     </div>
                 </div>
+                {this.currentTxDisp()}
             </div>
         )
     }

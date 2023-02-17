@@ -49,24 +49,6 @@ class WalletConnector extends React.Component {
         this.props.showClear(true);
     }
 
-    // async sendETH(addr, amt) {
-    //     // use metamask on goerli to seed a new account with ETH
-    //     try {
-    //         const provider = new ethers.providers.Web3Provider(window.ethereum);
-    //         const signer = provider.getSigner();
-    //         const tx = await signer.sendTransaction({
-    //             to: addr,
-    //             value: amt
-    //         })
-    //         console.log(`TX for Seeding ETH: https://goerli.etherscan.io/tx/${tx.hash}`);
-    //         await tx.wait();
-    //         const newBalance = Utils.parseEther(await provider.getBalance(addr));
-    //         console.log(`Done\n${addr} balance: ${newBalance} ETH`);
-    //     } catch(err) {
-    //         console.log(err);
-    //     }
-    // }
-
     walletDisp() {
         return (
             <p className='wallet-disp'>Current Wallet: {this.props.address}</p>
