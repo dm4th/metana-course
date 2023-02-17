@@ -218,6 +218,11 @@
   color: darkgreen;
 }
 
+.current-tx-failed {
+  background-color: lightpink;
+  color: darkred;
+}
+
 .password-message-div {
   display: flex;
   justify-content: center;

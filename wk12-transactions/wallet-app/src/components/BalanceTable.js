@@ -57,12 +57,20 @@ class BalanceTable extends React.Component {
                         </p>
                     </div>
                 )
-            } else {
+            } else if (this.props.currentTx.status === 'Transaction Complete') {
                 return (
                     <div className='current-tx-div'>
                         <p className='current-tx-disp current-tx-complete'>
                             {this.props.currentTx.status}:  
                             <a href={this.props.currentTx.link} target="_blank">Explorer</a>
+                        </p>
+                    </div>
+                )
+            } else {
+                return (
+                    <div className='current-tx-div'>
+                        <p className='current-tx-disp current-tx-failed'>
+                            {this.props.currentTx.status}
                         </p>
                     </div>
                 )

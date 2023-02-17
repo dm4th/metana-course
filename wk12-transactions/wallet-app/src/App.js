@@ -272,18 +272,28 @@ function App() {
   const sendTx = async (sign) => {
     await setShowTransfer(false);
     if (sign) {
-      const signedTx = await currentWallet.signTransaction(transferData);
-      const tx = await alchemy.transact.sendTransaction(signedTx);
-      await setCurrentTx(tx.hash);
-      await setCurrentTxStatus('Transaction Processing');
-
-      await tx.wait();
-
-      await setCurrentTxStatus('Transaction Complete');
-      await delay(5000);
-
-      await setCurrentTx(null);
-      await setCurrentTxStatus('none');
+      try {
+        const signedTx = await currentWallet.signTransaction(transferData);
+        const tx = await alchemy.transact.sendTransaction(signedTx);
+        await setCurrentTx(tx.hash);
+        await setCurrentTxStatus('Transaction Processing');
+        
+        await tx.wait();
+  
+        await setCurrentTxStatus('Transaction Complete');
+        await delay(5000);
+        await setCurrentTx(null);
+        await setCurrentTxStatus('none');
+      } catch (err) {
+        const regex = /(?<=\\"message\\":\\")(.*)(?=\\"}}")/;
+        const errorMessage = err.error.message.match(regex)[0];
+        await setCurrentTx('0x0');
+        await setCurrentTxStatus(`Transaction Failed:\n${errorMessage}`)
+        console.log(err.error.message.match(regex)[0]);
+        await delay(10000);
+        await setCurrentTx(null);
+        await setCurrentTxStatus('none');
+      }
     }
     await setTransferData({});
   }
