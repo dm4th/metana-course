@@ -289,7 +289,6 @@ function App() {
         const errorMessage = err.error.message.match(regex)[0];
         await setCurrentTx('0x0');
         await setCurrentTxStatus(`Transaction Failed:\n${errorMessage}`)
-        console.log(err.error.message.match(regex)[0]);
         await delay(10000);
         await setCurrentTx(null);
         await setCurrentTxStatus('none');
