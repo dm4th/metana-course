@@ -28,12 +28,6 @@ async function main() {
   console.log(`You the king!!!`);
 
   await ka.withdraw();
-
-
-  // const prevAddress = "0x6e88d9653960113dD272C34B2332684941E45d64";
-  // const KA = await hre.ethers.getContractFactory("KingAttack");  
-  // const ka = await KA.attach(prevAddress);
-  // await ka.withdraw();
 }
 
 // We recommend this pattern to be able to use async/await everywhere
