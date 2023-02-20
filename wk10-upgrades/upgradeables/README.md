@@ -9,7 +9,8 @@
 
 ## WNE ERC721 Contract Addresses
 - TransparentUpgradeableProxy: https://polygonscan.com/address/0x2CB66DF2e3C95c34B3461620B07639241916634F
-- ERC721 Implementation: https://polygonscan.com/address/0xb015B8fAbF0911Ed24eEb01CA3C9bfF5b5D70AeE
+- Previous ERC721 Implementation: https://polygonscan.com/address/0xb015B8fAbF0911Ed24eEb01CA3C9bfF5b5D70AeE
+- Upgraded ERC721 Implementation: https://polygonscan.com/address/0x4b647551fb41e664e6b92bf71d14faeb3c433e87
 
 
 ## Minting Contract Addresses
