@@ -9,36 +9,25 @@ import {
     Tooltip,
     Filler,
     Legend,
+    TimeScale,
   } from 'chart.js';
   import { Line } from 'react-chartjs-2';
+  import 'chartjs-adapter-date-fns';
+  import { enUS } from 'date-fns/locale';
   
   ChartJS.register(
     CategoryScale,
     LinearScale,
     PointElement,
     LineElement,
+    TimeScale,
     Title,
     Tooltip,
     Filler,
-    Legend
+    Legend,
   );
 
 class PairGraph extends React.Component {
-
-    yConv(arr) {
-        console.log(arr)
-        for(let i = 0; i<arr.length; arr++) {
-            console.log(i);
-            arr.splice(i, 0, arr[i].toNumber());
-        }
-    }
-
-    xConv(arr) {
-        for(let i = 0; i<arr.length; arr++) {
-            let d = new Date(arr[i])
-            arr.splice(i, 0, d);
-        }
-    }
 
     // Area Graph Render Options & Data
     options () {
@@ -62,26 +51,50 @@ class PairGraph extends React.Component {
                 y: {
                   type: 'linear',
                   display: true,
-                  position: 'left',
-                  min: 0
+                  position: 'left'
+                },
+                x: {
+                  type: 'time',
+                  adapters: {
+                    date: {
+                      locale: enUS
+                    }
+                  },
+                  time: {
+                    displayFormats: {
+                      hour: 'MMM d HHbb',
+                      day: 'MMM d',
+                      week: 'MMM d',
+                      month: 'MMM YYYY',
+                      quarter: 'MMM YYYY',
+                      year: 'YYYY',
+                    },
+                    unit: 'hour'
+                  }
                 }
             }
         })
     }
 
     data ()  {
-        return ({
-            labels: this.xConv(this.props._x),
-            datasets: [
-                {
-                    fill: true,
-                    label: this.props.pair,
-                    data: this.yConv(this.props._y),
-                    borderColor: 'rgb(53, 162, 235)',
-                    backgroundColor: 'rgba(53, 162, 235, 0.5)',    
-                }
-            ]
-        })
+      const data = [];
+      for( let i=0; i<this.props._x.length; i++) {
+        data.push({
+          x: this.props._x[i],
+          y: this.props._y[i]
+        });
+      }
+      return ({
+        datasets: [
+          {
+            fill: true,
+            label: this.props.pair,
+            data: data,
+            borderColor: 'rgb(53, 162, 235)',
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',    
+          }
+        ]
+      })
     }
 
     render () {

@@ -9,6 +9,8 @@
     "alchemy-sdk": "^2.4.3",
     "chart.js": "^4.2.1",
     "chartjs": "^0.3.24",
+    "chartjs-adapter-date-fns": "^3.0.0",
+    "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",
     "react": "^18.2.0",
