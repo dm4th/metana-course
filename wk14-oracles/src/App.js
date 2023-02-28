@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Network, Alchemy, Wallet, Utils } from 'alchemy-sdk';
 import { ethers } from 'ethers';
 
-import PairInput from './contracts/components/PairInput';
-import PairGraph from './contracts/components/PairGraph';
+import PairInput from './components/PairInput';
+import PairGraph from './components/PairGraph';
 
 import aggregatorV3InterfaceABIFile from './contracts/aggregatorV3InterfaceABI';
 
@@ -43,16 +43,6 @@ const priceFeeds = {
   'LINK/ETH': '0xDC530D9457755926550b59e8ECcdaE7624181557'
 };
 
-const timeSelections = {
-  '12H': 43200000,
-  '1D': 86400000,
-  '7D': 604800000,
-  '1M': 2629800000,
-  '3M': 7889400000,
-  '1Y': 31557600000,
-  '5Y': 157788000000
-};
-
 const axisSelections = [
   'Dual Axis',
   'Same Axis'
@@ -65,7 +55,7 @@ const alchemySettings = {
 
 const INITIAL_PAIR_1 = 'BTC/USD';
 const INITIAL_PAIR_2 = 'ETH/USD';
-const INITIAL_TIME = '1D';
+const INITIAL_ROUNDS = 50;
 const INITIAL_AXIS = 'Dual Axis';
 const aggregatorV3InterfaceABI = aggregatorV3InterfaceABIFile.abi;
 
@@ -76,31 +66,23 @@ function App() {
   // handle taking chart inputs from user
   const [pair1, setPair1] = useState(INITIAL_PAIR_1);
   const [pair2, setPair2] = useState(INITIAL_PAIR_2);
-  const [addr1, setAddr1] = useState(priceFeeds[INITIAL_PAIR_1]);
-  const [addr2, setAddr2] = useState(priceFeeds[INITIAL_PAIR_1]);
-  const [timePeriod, setTimePeriod] = useState(INITIAL_TIME);
-  const [timePeriodMilli, setTimePeriodMilli] = useState(timeSelections[INITIAL_TIME]);
+  const [historicalRounds, setHistoricalRounds] = useState(INITIAL_ROUNDS);
   const [dualAxis, setDualAxis] = useState(INITIAL_AXIS);
 
   const handlePair1Change = async (newPair) => {
     await setPair1(newPair);
-    await setAddr1(priceFeeds[newPair]);
   }
 
   const handlePair2Change = async (newPair) => {
     await setPair2(newPair);
-    await setAddr2(priceFeeds[newPair]);
   }
 
-  const handleTimeChange = async (newTime) => {
-    await setTimePeriod(newTime);
-    await setTimePeriodMilli(timeSelections[newTime]);
-    console.log(timePeriod);
+  const handleRoundsChange = async (newRounds) => {
+    await setHistoricalRounds(newRounds);
   }
 
   const handleAxisChange = async (newAxis) => {
     await setDualAxis(newAxis);
-    console.log(dualAxis);
   }
 
 
@@ -115,9 +97,13 @@ function App() {
   const connectAggContract = async (isPair1) => {
     const provider = await alchemy.config.getProvider();
     if (isPair1) {
-      await setAggContract1(new ethers.Contract(addr1, aggregatorV3InterfaceABI, provider));
+      const addr = priceFeeds[pair1];
+      const aggContract = new ethers.Contract(addr, aggregatorV3InterfaceABI, provider);
+      await setAggContract1(aggContract);
     } else {
-      await setAggContract2(new ethers.Contract(addr2, aggregatorV3InterfaceABI, provider));
+      const addr = priceFeeds[pair2];
+      const aggContract = new ethers.Contract(addr, aggregatorV3InterfaceABI, provider);
+      await setAggContract2(aggContract);
     }
   }
 
@@ -144,12 +130,10 @@ function App() {
     let y_axis = [answer];
 
     // loop over historical rounds to get historical prices
-    let lastTime = new Date().getTime() - timePeriodMilli;
-    while (timestamp > lastTime) {
+    for (let i=0; i<historicalRounds-1; i++) {
       aggRoundId--;
-      // check if we need to go to an earlier aggregator
-      if (aggRoundId == 0) {
-        phaseId.sub(1);
+      if (aggRoundId==0) {
+        phaseId = phaseId.sub(1);
         aggRoundId = await findMaxRoundId(aggContract, phaseId);
       }
       const validId = phaseId.shl(64).or(aggRoundId);
@@ -159,10 +143,6 @@ function App() {
       x_axis.splice(0, 0, newTimestamp);
       y_axis.splice(0, 0, newAnswer);
     }
-
-    console.log(`Is Pair 1: ${isPair1}`);
-    console.log(`X: ${x_axis}`);
-    console.log(`Y: ${y_axis}`);
 
     if (isPair1) {
       setXAxis1(x_axis);
@@ -176,17 +156,36 @@ function App() {
   const findMaxRoundId = async(contract, phaseId) => {
     let roundId = 1;
     let looping = true;
+    let up = true;
+    let jump = 1000;
     while (looping) {
-      const validId = phaseId.shl(64).or(roundId);
+      const validId = phaseId.shl(64).or(ethers.BigNumber.from(roundId));
+      let roundData;
       try {
-        await contract.getRoundData(validId);
-        roundId++;
+        roundData = await contract.getRoundData(validId);
       } catch (err) {
         console.log(err);
-        looping = false
+        roundData = {updatedAt: ethers.BigNumber.from(0)};
       }
+      console.log(roundData);
+      if (xOR(!roundData.updatedAt.isZero(), up)) {
+        console.log('boundary');
+        if (jump==1) {
+          looping = false;
+        } else {
+          jump = jump / 10;
+          up = !up;
+        }
+      }
+      if (up) roundId += jump;
+      else roundId -= jump;
     }
     return roundId;
+  }
+
+
+  const xOR = (a, b) => {
+    return ( a || b ) && !( a && b );
   }
 
 
@@ -202,11 +201,11 @@ function App() {
 
   useEffect(() => {
     retrievePriceData(true);
-  }, [aggContract1, timePeriod])
+  }, [aggContract1, historicalRounds])
 
   useEffect(() => {
     retrievePriceData(false);
-  }, [aggContract2, timePeriod])
+  }, [aggContract2, historicalRounds])
 
   return (
     <div className="App">
@@ -214,22 +213,25 @@ function App() {
       <div className='container'>
         <PairInput 
           selections={priceFeeds}
-          timeSelections={timeSelections}
           axisSelections={axisSelections}
           onPair1Change={handlePair1Change} 
           onPair2Change={handlePair2Change} 
-          onTimeChange={handleTimeChange} 
+          onRoundsChange={handleRoundsChange} 
           onAxisChange={handleAxisChange} 
           initialPair1={INITIAL_PAIR_1}
           initialPair2={INITIAL_PAIR_2}
-          initialTime={INITIAL_TIME}
+          initialRounds={INITIAL_ROUNDS}
           initialAxis={INITIAL_AXIS}
         />
-        {/* <PairGraph
-          pair={currentPair}
-          _x={xAxis}
-          _y={yAxis}
-        /> */}
+        <PairGraph
+          _pair1={pair1}
+          _pair2={pair2}
+          _x1={xAxis1}
+          _y1={yAxis1}
+          _x2={xAxis2}
+          _y2={yAxis2}
+          _dualAxis={dualAxis}
+        />
       </div>
     </div>
   );

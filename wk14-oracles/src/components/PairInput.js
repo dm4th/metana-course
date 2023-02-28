@@ -6,79 +6,67 @@ class PairInput extends React.Component {
         this.state = {
             _pair1: this.props.initialPair1,
             _pair2: this.props.initialPair2,
-            _time: this.props.initialTime,
+            _rounds: this.props.initialRounds,
             _axis: this.props.initialAxis
         };
 
         this.handlePair1Change = this.handlePair1Change.bind(this);
         this.handlePair2Change = this.handlePair2Change.bind(this);
-        this.handleTimeChange = this.handleTimeChange.bind(this);
+        this.handleRoundsChange = this.handleRoundsChange.bind(this);
         this.handleAxisChange = this.handleAxisChange.bind(this);
-        this.handlePair1Submit = this.handlePair1Submit.bind(this);
-        this.handlePair2Submit = this.handlePair2Submit.bind(this);
-        // this.handleTimeSubmit = this.handleTimeSubmit.bind(this);
+        this.handleRoundsSubmit = this.handleRoundsSubmit.bind(this);
     };
 
     async handlePair1Change(event) {
         await this.setState({
             _pair1: event.target.value,
             _pair2: this.state._pair2,
-            _time: this.state._time,
+            _rounds: this.state._rounds,
             _axis: this.state._axis
         });
+        this.props.onPair1Change(this.state._pair1);
     }
 
     async handlePair2Change(event) {
         await this.setState({
             _pair1: this.state._pair1,
             _pair2: event.target.value,
-            _time: this.state._time,
+            _rounds: this.state._rounds,
             _axis: this.state._axis
         });
+        this.props.onPair2Change(this.state._pair2);
     }
 
-    async handleTimeChange(event) {
+    async handleRoundsChange(event) {
         await this.setState({
             _pair1: this.state._pair1,
             _pair2: this.state._pair2,
-            _time: event.target.value,
+            _rounds: event.target.value,
             _axis: this.state._axis
         });
-        this.props.onTimeChange(this.state._time);
     }
 
     async handleAxisChange(event) {
         await this.setState({
             _pair1: this.state._pair1,
             _pair2: this.state._pair2,
-            _time: this.state._time,
+            _rounds: this.state._rounds,
             _axis: event.target.value
         });
         this.props.onAxisChange(this.state._axis);
-        console.log(this.state);
     }
 
-    handlePair1Submit(event) {
+    handleRoundsSubmit(event) {
         event.preventDefault();
-        this.props.onPair1Change(this.state._pair1);
+        this.props.onRoundsChange(this.state._rounds);
     }
-
-    handlePair2Submit(event) {
-        event.preventDefault();
-        this.props.onPair2Change(this.state._pair2);
-    }
-
-    // handleTimeSubmit(event) {
-    //     event.preventDefault();
-    //     this.props.onTimeChange(this.state._time);
-    // }
 
     render () {
         return (
             <div className="input-div">
-                <form className='input-form' onSubmit={this.handlePair1Submit}>
+                <form className='input-form'>
                     <label htmlFor="pair1-input" className='input-label'>
-                        Trading Pair to View:  
+                        Trading Pair to View  
                     </label>
                     <select className="selector input-field" name="pair1-input" onChange={this.handlePair1Change} defaultValue={this.props.initialPair1} >
                         {Object.keys(this.props.selections).map((k, i) => 
@@ -87,11 +75,10 @@ class PairInput extends React.Component {
                             </option>
                         )}
                     </select>
-                    <input type="submit" value="Submit" />
                 </form>
-                <form className='input-form' onSubmit={this.handlePair2Submit}>
+                <form className='input-form'>
                     <label htmlFor="pair2-input" className='input-label'>
-                        Comparison Trading Pair:  
+                        Comparison Trading Pair  
                     </label>
                     <select className="selector input-field" name="pair2-input" onChange={this.handlePair2Change} defaultValue={this.props.initialPair2} >
                         {Object.keys(this.props.selections).map((k, i) => 
@@ -100,21 +87,21 @@ class PairInput extends React.Component {
                             </option>
                         )}
                     </select>
-                    <input type="submit" value="Submit" />
                 </form>
-                <form className='input-form radio-form'>
-                    {Object.keys(this.props.timeSelections).map((k, i) => 
-                        <div className='radio-selection' key={k}>
-                            <input type='radio' id={i} name={k} value={k} checked={this.state._time === k} onChange={this.handleTimeChange} />
-                            <label htmlFor={i}>{k}</label>
-                        </div>
-                    )}
+                <form className='input-form' onSubmit={this.handleRoundsSubmit}>
+                    <label htmlFor='rounds' className='input-label'>
+                        Oracle Rounds to View
+                    </label>
+                    <div className='number-input-div'>
+                        <input className='input-field' type='number' id='rounds' name='rounds' min='1' max='1000' defaultValue={this.props.initialRounds} onChange={this.handleRoundsChange} />
+                        <input className='submit-button' type='submit' value="Submit" />
+                    </div>
                 </form>
                 <form className='input-form radio-form'>
                     {this.props.axisSelections.map((n) => 
-                        <div className='radio-selection'>
-                            <input type='radio' id={n} name='True' value={n} checked={this.state._axis === n} onChange={this.handleAxisChange} />
-                            <label htmlFor={n}>{n}</label>
+                        <div className='radio-selection' key={n}>
+                            <input className='radio-input' type='radio' id={n} name='True' value={n} checked={this.state._axis === n} onChange={this.handleAxisChange} />
+                            <label className='radio-label' htmlFor={n}>{n}</label>
                         </div>
                     )}
                 </form>
